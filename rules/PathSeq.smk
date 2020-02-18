@@ -1,13 +1,7 @@
 from os.path import join
 
-# expected input files - need to be defined when included
-# HOST_BAM_FILE - host-aligned bam file
-# HOST_BWA_IMAGE_INDEX
-# MICROBE_BWA_IMAGE_INDEX
-# MICROBE_FASTA_FILE
-# HOST_HSS_FILE
-# PATHSEQ_TAXONOMY
-
+HOST_HSS_FILE = join("PathSeq", "host.hss")
+HOST_BWA_IMAGE_INDEX = join("PathSeq", "host.fasta.img")
 
 # rule get_num_properly_paired_microbial_reads:
 #     input:
@@ -53,3 +47,27 @@ rule run_PathSeq:
         "--output '{output.pathseq_bam}' "
         "--scores-output '{output.pathseq_output}' "
         + config["params"]["PathSeq"]
+
+
+# Rules for building host files
+rule build_host_kmer_file:
+    input:
+        GENOME_FASTA_FILE
+    output:
+        HOST_HSS_FILE
+    shell:
+        "module load GATK/4.1.3.0 && "
+        "gatk PathSeqBuildKmers "
+        "--java-options '-Xmx80g' "
+        "--spark-master local[*] "  # use all available cores
+        "--reference '{input}' "
+        "-O '{output}'"
+
+rule build_host_BWA_image:
+    input:
+        GENOME_FASTA_FILE
+    output:
+        HOST_BWA_IMAGE_INDEX
+    shell:
+        "module load GATK/4.1.3.0 && "
+        "gatk BwaMemIndexImageCreator -I {input} -O {output}"
