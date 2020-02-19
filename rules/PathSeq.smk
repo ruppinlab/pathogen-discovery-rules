@@ -59,7 +59,6 @@ rule build_host_kmer_file:
         "module load GATK/4.1.3.0 && "
         "gatk PathSeqBuildKmers "
         "--java-options '-Xmx80g' "
-        "--spark-master local[*] "  # use all available cores
         "--reference '{input}' "
         "-O '{output}'"
 
