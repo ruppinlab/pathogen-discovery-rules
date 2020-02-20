@@ -54,7 +54,7 @@ rule extract_QNAME_from_BAM_FILE:
 # filter only the reads that PathSeq mapped to microbial genomes
 rule filter_PathSeq_bam:
     input:
-        join("output", "PathSeq", "{patient}.{sample}.pathseq.bam")
+        join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam")
     output:
         FILTERED_PATHSEQ_FASTA_FILE
     shell:
@@ -64,7 +64,7 @@ rule filter_PathSeq_bam:
 # we only want reads with UB and CB tags
 rule filter_BAM_FILE:
     input:
-        join("output", "STARsolo", "{patient}.{sample}", "Aligned.sortedByCoord.out.bam")
+        join("output", "STARsolo", "{patient}-{sample}", "Aligned.sortedByCoord.out.bam")
     output:
         FILTERED_FASTA_FILE
     shell:

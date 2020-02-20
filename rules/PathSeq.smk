@@ -30,8 +30,8 @@ rule run_PathSeq:
         host_hss_file = HOST_HSS_FILE,
         taxonomy_db = config["PathSeq"]["taxonomy_db"]
     output:
-        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}.pathseq.bam"),
-        pathseq_output = join("output", "PathSeq", "{patient}-{sample}.pathseq.txt")
+        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam"),
+        pathseq_output = join("output", "PathSeq", "{patient}-{sample}", "pathseq.txt")
     shell:
         "module load GATK/4.1.3.0 && "
         "gatk PathSeqPipelineSpark "
