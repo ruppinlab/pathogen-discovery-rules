@@ -23,15 +23,15 @@ HOST_BWA_IMAGE_INDEX = join("PathSeq", "data", "host.fasta.img")
 
 rule run_PathSeq:
     input:
-        bam_file = BAM_FILE,
+        bam_file = config["PathSeq"]["bam_file"],
         host_bwa_image = HOST_BWA_IMAGE_INDEX,
-        microbe_bwa_image = MICROBE_BWA_IMAGE_INDEX,
-        microbe_fasta_file = MICROBE_FASTA_FILE,
+        microbe_bwa_image = config["PathSeq"]["microbe_bwa_image"],
+        microbe_fasta_file = config["PathSeq"]["microbe_fasta"],
         host_hss_file = HOST_HSS_FILE,
-        taxonomy_db = TAXONOMY_DB_FILE
+        taxonomy_db = config["PathSeq"]["taxonomy_db"]
     output:
-        pathseq_bam = join("PathSeq", "output", "{patient}.{sample}.pathseq.bam"),
-        pathseq_output = join("PathSeq", "output", "{patient}.{sample}.pathseq.txt")
+        pathseq_bam = join("PathSeq", "output", "{patient}-{sample}.pathseq.bam"),
+        pathseq_output = join("PathSeq", "output", "{patient}-{sample}.pathseq.txt")
     shell:
         "module load GATK/4.1.3.0 && "
         "gatk PathSeqPipelineSpark "
@@ -52,7 +52,7 @@ rule run_PathSeq:
 # Rules for building host files
 rule build_host_kmer_file:
     input:
-        GENOME_FASTA_FILE
+        config["ref"]["genome"]
     output:
         HOST_HSS_FILE
     shell:
@@ -64,7 +64,7 @@ rule build_host_kmer_file:
 
 rule build_host_BWA_image:
     input:
-        GENOME_FASTA_FILE
+        config["ref"]["genome"]
     output:
         HOST_BWA_IMAGE_INDEX
     shell:
