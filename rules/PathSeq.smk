@@ -1,7 +1,7 @@
 from os.path import join
 
-HOST_HSS_FILE = join("PathSeq", "data", "host.hss")
-HOST_BWA_IMAGE_INDEX = join("PathSeq", "data", "host.fasta.img")
+HOST_HSS_FILE = join("output", "PathSeq", "host.hss")
+HOST_BWA_IMAGE_INDEX = join("output", "PathSeq", "host.fasta.img")
 
 # rule get_num_properly_paired_microbial_reads:
 #     input:
@@ -30,8 +30,8 @@ rule run_PathSeq:
         host_hss_file = HOST_HSS_FILE,
         taxonomy_db = config["PathSeq"]["taxonomy_db"]
     output:
-        pathseq_bam = join("PathSeq", "output", "{patient}-{sample}.pathseq.bam"),
-        pathseq_output = join("PathSeq", "output", "{patient}-{sample}.pathseq.txt")
+        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}.pathseq.bam"),
+        pathseq_output = join("output", "PathSeq", "{patient}-{sample}.pathseq.txt")
     shell:
         "module load GATK/4.1.3.0 && "
         "gatk PathSeqPipelineSpark "

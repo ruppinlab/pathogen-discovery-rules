@@ -1,6 +1,6 @@
 include: "PathSeq.smk"
 
-SC_PATHSEQ_OUTPUT = join("scPathSeq", "{patient}.{sample}")
+SC_PATHSEQ_OUTPUT = join("output", "scPathSeq", "{patient}.{sample}")
 
 FILTERED_FASTA_FILE = join(SC_PATHSEQ_OUTPUT, "CB.UB.STAR.filtered.fasta")
 FILTERED_PATHSEQ_FASTA_FILE = join(SC_PATHSEQ_OUTPUT, "PathSeq.filtered.fasta")
@@ -54,7 +54,7 @@ rule extract_QNAME_from_BAM_FILE:
 # filter only the reads that PathSeq mapped to microbial genomes
 rule filter_PathSeq_bam:
     input:
-        join("PathSeq", "{patient}.{sample}.pathseq.bam")
+        join("output", "PathSeq", "{patient}.{sample}.pathseq.bam")
     output:
         FILTERED_PATHSEQ_FASTA_FILE
     shell:
@@ -64,7 +64,7 @@ rule filter_PathSeq_bam:
 # we only want reads with UB and CB tags
 rule filter_BAM_FILE:
     input:
-        join("STARsolo", "{patient}.{sample}", "Aligned.sortedByCoord.out.bam")
+        join("output", "STARsolo", "{patient}.{sample}", "Aligned.sortedByCoord.out.bam")
     output:
         FILTERED_FASTA_FILE
     shell:
