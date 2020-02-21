@@ -35,7 +35,7 @@ rule run_PathSeq:
     shell:
         "module load GATK/4.1.3.0 && "
         "gatk PathSeqPipelineSpark "
-        '--java-options "-Xmx115g -Djava.io.tmpdir=/lscratch/$SLURM_JOBID" ' # double quotes escapes the wildcard
+        '--java-options "-Xmx145g -Djava.io.tmpdir=/lscratch/$SLURM_JOBID" ' # double quotes escapes the wildcard
         "--spark-master local[*] "  # use all available cores
         "--is-host-aligned true "
         "--input '{input.bam_file}' "
