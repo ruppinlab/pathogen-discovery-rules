@@ -13,6 +13,8 @@ BACTERIA_OF_INTERST_FA_FILE = join("data", "{microbe}.fa")
 
 # TODO - look for contigs belonging to specific species
 
+localrules: download_bacteria_fna_refseq
+
 include: "make-PathSeq-files.smk"
 
 
