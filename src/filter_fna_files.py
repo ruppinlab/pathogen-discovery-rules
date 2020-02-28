@@ -3,7 +3,7 @@ from multiprocessing import Pool
 import itertools
 
 
-bacteria_of_interest = ["Salmonella enterica subsp. enterica serovar Typhimurium str. SL1344", "Salmonella enterica subsp. enterica serovar Typhimurium str. LT2"]
+bacteria_of_interest = snakemake.params["microbes_of_interest"]
 
 
 def identify_specific_sequences(f):
@@ -17,6 +17,5 @@ def identify_specific_sequences(f):
 if __name__ == '__main__':
     with Pool(31) as p:
         list_of_lists = p.map(identify_specific_sequences, snakemake.input)
-        flat_list = list(itertools.chain(*list_of_lists)) 
-        for r in flat_list:
-            print(r.description)
+        sequences = list(itertools.chain(*list_of_lists))
+        SeqIO.write(sequences, snakemake.output, "fasta")
