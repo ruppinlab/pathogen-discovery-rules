@@ -25,7 +25,7 @@ rule filter_bacteria_fna_refseq:
     conda:
         "../envs/biopython.yml"
     params:
-        microbes_of_interest = ["Salmonella enterica subsp. enterica serovar Typhimurium str. SL1344", "Salmonella enterica subsp. enterica serovar Typhimurium str. LT2"]
+        microbes_of_interest = config["microbes_of_interest"]
     input:
         expand(BACTERIA_FNA_FILE, fn=range(1,1955))
     output:
@@ -35,8 +35,6 @@ rule filter_bacteria_fna_refseq:
 
 
 rule download_bacteria_fna_refseq:
-    wildcard_constraints:
-        microbe = "bacteria"
     params:
         url = BACTERIA_REFSEQ_URL
     output:
