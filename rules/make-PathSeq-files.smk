@@ -39,7 +39,7 @@ rule download_RefSeq_accession_catalog:
         "wget {params} -O {output}"
 
 # rules for building viral files
-rule build_viral_taxonomy_file:
+rule build_taxonomy_file:
     input:
         fa = FASTA_FILE,
         catalog = REFSEQ_CATALOG,
@@ -47,7 +47,7 @@ rule build_viral_taxonomy_file:
         fai = FASTA_IDX_FILE,
         dict = FASTA_DICT_FILE
     output:
-        VIRAL_TAXONOMY
+        TAXONOMY
     shell:
         "module load GATK/4.1.3.0 && "
         "gatk PathSeqBuildReferenceTaxonomy "
@@ -65,7 +65,7 @@ rule create_fasta_dict:
         "module load picard && java -jar $PICARDJARPATH/picard.jar "
         "CreateSequenceDictionary R= '{input}' O= '{output}'"
 
-rule create_viral_fasta_index_file:
+rule create_fasta_index_file:
     input:
         FASTA_FILE
     output:
@@ -73,7 +73,7 @@ rule create_viral_fasta_index_file:
     shell:
         "module load samtools && samtools faidx {input}"
 
-rule build_viral_BWA_image:
+rule build_BWA_image:
     input:
         FASTA_FILE
     output:

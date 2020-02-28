@@ -18,4 +18,4 @@ if __name__ == '__main__':
     with Pool(31) as p:
         list_of_lists = p.map(identify_specific_sequences, snakemake.input)
         sequences = list(itertools.chain(*list_of_lists))
-        SeqIO.write(sequences, snakemake.output, "fasta")
+        SeqIO.write(sequences, snakemake.output[0], "fasta")
