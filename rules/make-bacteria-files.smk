@@ -33,7 +33,7 @@ rule download_bacteria_fna_refseq:
     params:
         url = BACTERIA_REFSEQ_URL
     output:
-        BACTERIA_FNA_FILE
+        temp(BACTERIA_FNA_FILE)
     shell:
         "wget -O - {params.url}/bacteria.{wildcards.fn}.1.genomic.fna.gz | "
         "gunzip -c > {output}"
