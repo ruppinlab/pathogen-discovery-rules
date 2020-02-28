@@ -4,7 +4,7 @@ NCBI_REFSEQ_FTP = "ftp://ftp.ncbi.nlm.nih.gov/refseq/release/"
 BACTERIA_REFSEQ_URL = join(NCBI_REFSEQ_FTP, "bacteria")
 
 BACTERIA_FNA_FILE = join("raw", "bacteria", "bacteria.{fn}.1.genomic.fna")
-BACTERIA_OF_INTERST_FA_FILE = join("output", "bacteria", "{microbe}.fa")
+BACTERIA_OF_INTERST_FA_FILE = join("data", "{microbe}.fa")
 # as of right now, there are 1954 bacteria files
 # rule all:
 #     input:
