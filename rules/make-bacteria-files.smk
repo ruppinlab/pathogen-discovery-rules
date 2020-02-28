@@ -16,11 +16,6 @@ BACTERIA_OF_INTERST_FNA_FILE = join("output", "bacteria", "{microbe}.genomic.fna
 include: "make-PathSeq-files.smk"
 
 
-rule all:
-    input:
-        expand(BACTERIA_OF_INTERST_FNA_FILE, microbe="salmonella-Aulicino2018")
-
-
 rule filter_bacteria_fna_refseq:
     conda:
         "../envs/biopython.yml"
