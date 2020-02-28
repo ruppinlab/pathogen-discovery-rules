@@ -25,7 +25,7 @@ rule filter_bacteria_fna_refseq:
     conda:
         "../envs/biopython.yml"
     params:
-        microbes_of_interest = config["microbes_of_interest"]
+        microbes_of_interest = config["PathSeq"]["microbes_of_interest"]
     input:
         expand(BACTERIA_FNA_FILE, fn=range(1,1955))
     output:
