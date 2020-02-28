@@ -4,7 +4,7 @@ NCBI_REFSEQ_FTP = "ftp://ftp.ncbi.nlm.nih.gov/refseq/release/"
 BACTERIA_REFSEQ_URL = join(NCBI_REFSEQ_FTP, "bacteria")
 
 BACTERIA_FNA_FILE = join("raw", "bacteria", "bacteria.{fn}.1.genomic.fna")
-BACTERIA_OF_INTERST_FNA_FILE = join("output", "bacteria", "{microbe}.genomic.fna")
+BACTERIA_OF_INTERST_FA_FILE = join("output", "bacteria", "{microbe}.fa")
 # as of right now, there are 1954 bacteria files
 # rule all:
 #     input:
@@ -24,7 +24,7 @@ rule filter_bacteria_fna_refseq:
     input:
         expand(BACTERIA_FNA_FILE, fn=range(1,1955))
     output:
-        BACTERIA_OF_INTERST_FNA_FILE
+        BACTERIA_OF_INTERST_FA_FILE
     script:
         "../src/filter_fna_files.py"
 
