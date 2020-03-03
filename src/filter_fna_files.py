@@ -9,8 +9,11 @@ bacteria_of_interest = snakemake.params["microbes_of_interest"]
 def identify_specific_sequences(f):
     output = []
     for record in SeqIO.parse(f, "fasta"):
-        if any(b in record.description for b in bacteria_of_interest):
-            output.append(record)
+        # NC - complete genomic molecule, usually reference assembly
+        # NZ - Unfinished WGS - https://www.biostars.org/p/209159/
+        if record.ID.startswith("NC"):
+            if any(b in record.description for b in bacteria_of_interest):
+                output.append(record)
     return output
 
 
