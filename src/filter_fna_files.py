@@ -11,7 +11,7 @@ def identify_specific_sequences(f):
     for record in SeqIO.parse(f, "fasta"):
         # NC - complete genomic molecule, usually reference assembly
         # NZ - Unfinished WGS - https://www.biostars.org/p/209159/
-        if record.ID.startswith("NC"):
+        if record.name.startswith("NC"):
             if any(b in record.description for b in bacteria_of_interest):
                 output.append(record)
     return output
