@@ -23,9 +23,9 @@ HOST_BWA_IMAGE_INDEX = join("output", "PathSeq", "host.fasta.img")
 
 def get_ref_genome(wildcards):
     try:
-        config["PathSeq"]["genome"]
+        return config["PathSeq"]["genome"]
     except:
-        config["ref"]["genome"]
+        return config["ref"]["genome"]
 
 rule run_PathSeq:
     input:
