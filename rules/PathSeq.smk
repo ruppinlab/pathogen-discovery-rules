@@ -21,6 +21,12 @@ HOST_BWA_IMAGE_INDEX = join("output", "PathSeq", "host.fasta.img")
 #         "module load samtools && "
 #         "samtools view -f 0x2 {input} | wc -l > {output}"
 
+def get_ref_genome(wildcards):
+    try:
+        config["PathSeq"]["genome"]
+    except:
+        config["ref"]["genome"]
+
 rule run_PathSeq:
     input:
         bam_file = config["PathSeq"]["bam_file"],
@@ -52,7 +58,7 @@ rule run_PathSeq:
 # Rules for building host files
 rule build_host_kmer_file:
     input:
-        config["ref"]["genome"]
+        get_ref_genome
     output:
         HOST_HSS_FILE
     shell:
@@ -64,7 +70,7 @@ rule build_host_kmer_file:
 
 rule build_host_BWA_image:
     input:
-        config["ref"]["genome"]
+        get_ref_genome
     output:
         HOST_BWA_IMAGE_INDEX
     shell:
