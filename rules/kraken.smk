@@ -10,7 +10,7 @@ rule run_kraken:
         fq1 = expand(join("FASTQ", "raw", "{patient}-{sample}_1.fastq.gz"), zip, patient=samples["patient"], sample=samples["sample"]),
         fq2 = expand(join("FASTQ", "raw", "{patient}-{sample}_2.fastq.gz"), zip, patient=samples["patient"], sample=samples["sample"]),
     output:
-        expand(join("output", "kraken", "{patient}-{sample}.kraken"))
+        expand(join("output", "kraken", "{patient}-{sample}.kraken"), zip, patient=samples["patient"], sample=samples["sample"])
     run:
         shell("module load kraken/1.1")
         shell("trap 'rm -rf /dev/shm/{params.dbname}' EXIT")
