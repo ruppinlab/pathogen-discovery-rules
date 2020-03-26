@@ -1,0 +1,10 @@
+name: kraken-biom-parser
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - click
+  - pandas
+  - numpy
+  - biom-format
