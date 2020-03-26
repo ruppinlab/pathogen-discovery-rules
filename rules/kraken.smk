@@ -1,7 +1,9 @@
+from os.path import join
+
 
 KRAKEN_OUTPUT_FILE = join("output", "Kraken", "{patient}-{sample}", "sequences.kraken")
 KRAKEN_TRANSLATE_FILE = join("output", "Kraken", "{patient}-{sample}", "sequences_mpa_report.txt")
-KRAKEN_BIOM_FILE = join("output", "Kraken", "{patient}-{sample}", "sequences_mpa_report.txt")
+KRAKEN_BIOM_FILE = join("output", "Kraken", "{patient}-{sample}", "sequences.biom")
 
 # biowulf kraken help page - https://hpc.nih.gov/apps/kraken.html
 # key idea - copy the DB into memory via "cp -r $DB /dev/shm"
