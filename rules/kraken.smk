@@ -1,9 +1,11 @@
-from os.path import join
+from os.path import join, dirname
 
-
+# files
 KRAKEN_OUTPUT_FILE = join("output", "Kraken", "{patient}-{sample}", "sequences.kraken")
 KRAKEN_TRANSLATE_FILE = join("output", "Kraken", "{patient}-{sample}", "sequences_mpa_report.txt")
 KRAKEN_BIOM_FILE = join("output", "Kraken", "{patient}-{sample}", "sequences.biom")
+# scripts
+KRAKEN_TO_BIOM_SCRIPT = join(dirname(srcdir("kraken.smk")), "..", "src", "parse_kraken_to_biom.py")
 
 # biowulf kraken help page - https://hpc.nih.gov/apps/kraken.html
 # key idea - copy the DB into memory via "cp -r $DB /dev/shm"
@@ -54,6 +56,6 @@ rule parse_Kraken_to_biom:
     output:
         KRAKEN_BIOM_FILE
     shell:
-        "../src/parse_kraken_to_biom.py --kraken-translate-report-fp {input} "
+        "python {KRAKEN_TO_BIOM_SCRIPT} --kraken-translate-report-fp {input} "
         "--taxonomic-rank " + config["Kraken"]["taxonomic_rank"] + " "
         "--biom-output-fp {output}"
