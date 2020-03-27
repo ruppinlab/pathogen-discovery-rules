@@ -7,6 +7,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #-----------------------------------------------------------------------------
+# Updated 2020 by Welles Robinson to replaced removed functions
 
 """
 Parse output of "kraken translate" and generate single BIOM table.
@@ -65,14 +66,19 @@ def compute_biom_table(kraken_translate_report_fp,
                 sample_id = label.split('_')[0]
                 value = abundances.at[taxonomy, sample_id]
                 if np.isnan(value):
-                    abundances.set_value(taxonomy, sample_id, 1.)
+                    # abundances.set_value(taxonomy, sample_id, 1.)
+                    abundances.at[taxonomy, sample_id] = 1.
                 else:
-                    abundances.set_value(taxonomy, sample_id, value+1.)
+                    # abundances.set_value(taxonomy, sample_id, value+1.)
+                    abundances.at[taxonomy, sample_id] = value+1.
     obs_ids = abundances.index.values.tolist()
     for i in range(len(obs_ids)):
         obs_ids[i] = obs_ids[i].replace("d__", "k__")
         obs_ids[i] = obs_ids[i].replace("|", ";")
-    return Table(abundances.fillna(0.).as_matrix(),
+    # return Table(abundances.fillna(0.).as_matrix(),
+    #              obs_ids,
+    #              abundances.columns.values.tolist())
+    return Table(abundances.fillna(0.).values,
                  obs_ids,
                  abundances.columns.values.tolist())
 
