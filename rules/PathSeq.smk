@@ -3,9 +3,11 @@ from os.path import join
 HOST_HSS_FILE = join("output", "PathSeq", "host.hss")
 HOST_BWA_IMAGE_INDEX = join("output", "PathSeq", "host.fasta.img")
 
-PAIRED_OUTPUT_BAM = join("output", "PathSeq", "{patient}-{sample}", "filtered-paired.bam")
-UNPAIRED_OUTPUT_BAM = join("output", "PathSeq", "{patient}-{sample}", "unfiltered-unpaired.bam")
+PAIRED_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "filtered-paired.bam")
+UNPAIRED_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "unfiltered-unpaired.bam")
 PATHSEQ_FILTER_FILE = join("output", "PathSeq", "{patient}-{sample}", "filter-metrics.txt")
+PAIRED_ALIGNED_BAM = join("output", "PathSeq", "{patient}-{sample}", "aligned-paired.bam")
+UNPAIRED_ALIGNED_BAM = join("output", "PathSeq", "{patient}-{sample}", "aligned-unpaired.bam")
 # rule get_num_properly_paired_microbial_reads:
 #     input:
 #         PATHSEQ_BAM_FILE
@@ -24,14 +26,14 @@ PATHSEQ_FILTER_FILE = join("output", "PathSeq", "{patient}-{sample}", "filter-me
 #         "module load samtools && "
 #         "samtools view -f 0x2 {input} | wc -l > {output}"
 
-rule run_PathSeq_filter:
+rule PathSeqFilterSpark:
     input:
         bam_file = config["PathSeq"]["bam_file"],
         host_bwa_image = HOST_BWA_IMAGE_INDEX,
         host_hss_file = HOST_HSS_FILE
     output:
-        paired_output = PAIRED_OUTPUT_BAM,
-        unpaired_output = UNPAIRED_OUTPUT_BAM,
+        paired_output = PAIRED_FILTERED_BAM,
+        unpaired_output = UNPAIRED_FILTERED_BAM,
         filter_metrics = PATHSEQ_FILTER_FILE
     shell:
         "module load GATK/4.1.3.0 && "
@@ -43,6 +45,27 @@ rule run_PathSeq_filter:
         "--paired-output '{output.paired_output}' "
         "--unpaired-output '{output.unpaired_output}' "
         "--filter-metrics '{output.filter_metrics}' "
+        + config["params"]["PathSeq"]["filter"]
+
+rule PathSeqBwaSpark:
+    input:
+        paired_input = PAIRED_FILTERED_BAM,
+        unpaired_input = UNPAIRED_FILTERED_BAM,
+        microbe_bwa_image = config["PathSeq"]["microbe_bwa_image"],
+        microbe_fasta_file = config["PathSeq"]["microbe_fasta"]
+    output:
+        paired_output = PAIRED_ALIGNED_BAM,
+        unpaired_output = UNPAIRED_ALIGNED_BAM
+    shell:
+        "module load GATK/4.1.3.0 && "
+        "gatk PathSeqPipelineSpark "
+        "--paired-input '{paired_input.bam_file}' "
+        "--unpaired-input '{unpaired_input.bam_file}' "
+        "--microbe-fasta '{input.microbe_fasta_file}' "
+        "--microbe-bwa-image '{input.microbe_bwa_image}' "
+        "--paired-output '{output.paired_output}' "
+        "--unpaired-output '{output.unpaired_output}' "
+        + config["params"]["PathSeq"]["BWA"]
 
 def get_ref_genome(wildcards):
     try:
