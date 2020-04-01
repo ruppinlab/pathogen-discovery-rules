@@ -3,6 +3,9 @@ from os.path import join
 HOST_HSS_FILE = join("output", "PathSeq", "host.hss")
 HOST_BWA_IMAGE_INDEX = join("output", "PathSeq", "host.fasta.img")
 
+PAIRED_OUTPUT_BAM = join("output", "PathSeq", "{patient}-{sample}", "filtered-paired.bam")
+UNPAIRED_OUTPUT_BAM = join("output", "PathSeq", "{patient}-{sample}", "unfiltered-unpaired.bam")
+PATHSEQ_FILTER_FILE = join("output", "PathSeq", "{patient}-{sample}", "filter-metrics.txt")
 # rule get_num_properly_paired_microbial_reads:
 #     input:
 #         PATHSEQ_BAM_FILE
@@ -20,6 +23,26 @@ HOST_BWA_IMAGE_INDEX = join("output", "PathSeq", "host.fasta.img")
 #     shell:
 #         "module load samtools && "
 #         "samtools view -f 0x2 {input} | wc -l > {output}"
+
+rule run_PathSeq_filter:
+    input:
+        bam_file = config["PathSeq"]["bam_file"],
+        host_bwa_image = HOST_BWA_IMAGE_INDEX,
+        host_hss_file = HOST_HSS_FILE
+    output:
+        paired_output = PAIRED_OUTPUT_BAM,
+        unpaired_output = UNPAIRED_OUTPUT_BAM,
+        filter_metrics = PATHSEQ_FILTER_FILE
+    shell:
+        "module load GATK/4.1.3.0 && "
+        "gatk PathSeqFilterSpark "
+        "--is-host-aligned true "
+        "--input '{input.bam_file}' "
+        "--filter-bwa-image '{input.host_bwa_image}' "
+        "--kmer-file '{input.host_hss_file}' "
+        "--paired-output '{output.paired_output}' "
+        "--unpaired-output '{output.unpaired_output}' "
+        "--filter-metrics '{output.filter_metrics}' "
 
 def get_ref_genome(wildcards):
     try:
