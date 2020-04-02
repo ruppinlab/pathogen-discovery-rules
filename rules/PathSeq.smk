@@ -83,30 +83,30 @@ def get_ref_genome(wildcards):
     except:
         return config["ref"]["genome"]
 
-rule run_PathSeq:
-    input:
-        bam_file = config["PathSeq"]["bam_file"],
-        host_bwa_image = HOST_BWA_IMAGE_INDEX,
-        microbe_bwa_image = config["PathSeq"]["microbe_bwa_image"],
-        microbe_fasta_file = config["PathSeq"]["microbe_fasta"],
-        host_hss_file = HOST_HSS_FILE,
-        taxonomy_db = config["PathSeq"]["taxonomy_db"]
-    output:
-        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam"),
-        pathseq_output = join("output", "PathSeq", "{patient}-{sample}", "pathseq.txt")
-    shell:
-        "module load GATK/4.1.3.0 && "
-        "gatk PathSeqPipelineSpark "
-        "--is-host-aligned true "
-        "--input '{input.bam_file}' "
-        "--filter-bwa-image '{input.host_bwa_image}' "
-        "--kmer-file '{input.host_hss_file}' "
-        "--microbe-fasta '{input.microbe_fasta_file}' "
-        "--microbe-bwa-image '{input.microbe_bwa_image}' "
-        "--taxonomy-file '{input.taxonomy_db}' "
-        "--output '{output.pathseq_bam}' "
-        "--scores-output '{output.pathseq_output}' "
-        + config["params"]["PathSeq"]
+# rule run_PathSeq:
+#     input:
+#         bam_file = config["PathSeq"]["bam_file"],
+#         host_bwa_image = HOST_BWA_IMAGE_INDEX,
+#         microbe_bwa_image = config["PathSeq"]["microbe_bwa_image"],
+#         microbe_fasta_file = config["PathSeq"]["microbe_fasta"],
+#         host_hss_file = HOST_HSS_FILE,
+#         taxonomy_db = config["PathSeq"]["taxonomy_db"]
+#     output:
+#         pathseq_bam = join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam"),
+#         pathseq_output = join("output", "PathSeq", "{patient}-{sample}", "pathseq.txt")
+#     shell:
+#         "module load GATK/4.1.3.0 && "
+#         "gatk PathSeqPipelineSpark "
+#         "--is-host-aligned true "
+#         "--input '{input.bam_file}' "
+#         "--filter-bwa-image '{input.host_bwa_image}' "
+#         "--kmer-file '{input.host_hss_file}' "
+#         "--microbe-fasta '{input.microbe_fasta_file}' "
+#         "--microbe-bwa-image '{input.microbe_bwa_image}' "
+#         "--taxonomy-file '{input.taxonomy_db}' "
+#         "--output '{output.pathseq_bam}' "
+#         "--scores-output '{output.pathseq_output}' "
+#         + config["params"]["PathSeq"]
 
 
 # Rules for building host files
