@@ -58,7 +58,7 @@ rule PathSeqBwaSpark:
         unpaired_output = UNPAIRED_ALIGNED_BAM
     shell:
         "module load GATK/4.1.3.0 && "
-        "gatk PathSeqPipelineSpark "
+        "gatk PathSeqBwaSpark "
         "--paired-input '{input.paired_input}' "
         "--unpaired-input '{input.unpaired_input}' "
         "--microbe-fasta '{input.microbe_fasta_file}' "
