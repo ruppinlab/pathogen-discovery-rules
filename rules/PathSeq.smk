@@ -59,13 +59,23 @@ rule PathSeqBwaSpark:
     shell:
         "module load GATK/4.1.3.0 && "
         "gatk PathSeqPipelineSpark "
-        "--paired-input '{paired_input.bam_file}' "
-        "--unpaired-input '{unpaired_input.bam_file}' "
+        "--paired-input '{input.paired_input}' "
+        "--unpaired-input '{input.unpaired_input}' "
         "--microbe-fasta '{input.microbe_fasta_file}' "
         "--microbe-bwa-image '{input.microbe_bwa_image}' "
         "--paired-output '{output.paired_output}' "
         "--unpaired-output '{output.unpaired_output}' "
         + config["params"]["PathSeq"]["BWA"]
+
+# rule PathSeqScoreSpark:
+#     input:
+#         paired_input = PAIRED_ALIGNED_BAM,
+#         unpaired_input = UNPAIRED_ALIGNED_BAM,
+#         taxonomy_db = config["PathSeq"]["taxonomy_db"]
+#     output:
+#         score_file =,
+#         output_bam = ,# annotated with the NCBI taxonomy IDs of mapped organisms
+#
 
 def get_ref_genome(wildcards):
     try:
