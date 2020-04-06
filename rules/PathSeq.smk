@@ -8,6 +8,9 @@ UNPAIRED_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "unfilte
 PATHSEQ_FILTER_FILE = join("output", "PathSeq", "{patient}-{sample}", "filter-metrics.txt")
 PAIRED_ALIGNED_BAM = join("output", "PathSeq", "{patient}-{sample}", "aligned-paired.bam")
 UNPAIRED_ALIGNED_BAM = join("output", "PathSeq", "{patient}-{sample}", "aligned-unpaired.bam")
+
+# params
+GATK_VERSION = "4.1.3.0"
 # rule get_num_properly_paired_microbial_reads:
 #     input:
 #         PATHSEQ_BAM_FILE
@@ -26,6 +29,15 @@ UNPAIRED_ALIGNED_BAM = join("output", "PathSeq", "{patient}-{sample}", "aligned-
 #         "module load samtools && "
 #         "samtools view -f 0x2 {input} | wc -l > {output}"
 
+# functions
+def get_ref_genome(wildcards):
+    try:
+        return config["PathSeq"]["genome"]
+    except:
+        return config["ref"]["genome"]
+
+# rules for running PathSeqSpark
+
 rule PathSeqFilterSpark:
     input:
         bam_file = config["PathSeq"]["bam_file"],
@@ -36,7 +48,7 @@ rule PathSeqFilterSpark:
         unpaired_output = UNPAIRED_FILTERED_BAM,
         filter_metrics = PATHSEQ_FILTER_FILE
     shell:
-        "module load GATK/4.1.3.0 && "
+        "module load GATK/{GATK_VERSION} && "
         "gatk PathSeqFilterSpark "
         "--is-host-aligned true "
         "--input '{input.bam_file}' "
@@ -57,7 +69,7 @@ rule PathSeqBwaSpark:
         paired_output = PAIRED_ALIGNED_BAM,
         unpaired_output = UNPAIRED_ALIGNED_BAM
     shell:
-        "module load GATK/4.1.3.0 && "
+        "module load GATK/{GATK_VERSION} && "
         "gatk PathSeqBwaSpark "
         "--paired-input '{input.paired_input}' "
         "--unpaired-input '{input.unpaired_input}' "
@@ -77,46 +89,43 @@ rule PathSeqBwaSpark:
 #         output_bam = ,# annotated with the NCBI taxonomy IDs of mapped organisms
 #
 
-def get_ref_genome(wildcards):
-    try:
-        return config["PathSeq"]["genome"]
-    except:
-        return config["ref"]["genome"]
 
-# rule run_PathSeq:
-#     input:
-#         bam_file = config["PathSeq"]["bam_file"],
-#         host_bwa_image = HOST_BWA_IMAGE_INDEX,
-#         microbe_bwa_image = config["PathSeq"]["microbe_bwa_image"],
-#         microbe_fasta_file = config["PathSeq"]["microbe_fasta"],
-#         host_hss_file = HOST_HSS_FILE,
-#         taxonomy_db = config["PathSeq"]["taxonomy_db"]
-#     output:
-#         pathseq_bam = join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam"),
-#         pathseq_output = join("output", "PathSeq", "{patient}-{sample}", "pathseq.txt")
-#     shell:
-#         "module load GATK/4.1.3.0 && "
-#         "gatk PathSeqPipelineSpark "
-#         "--is-host-aligned true "
-#         "--input '{input.bam_file}' "
-#         "--filter-bwa-image '{input.host_bwa_image}' "
-#         "--kmer-file '{input.host_hss_file}' "
-#         "--microbe-fasta '{input.microbe_fasta_file}' "
-#         "--microbe-bwa-image '{input.microbe_bwa_image}' "
-#         "--taxonomy-file '{input.taxonomy_db}' "
-#         "--output '{output.pathseq_bam}' "
-#         "--scores-output '{output.pathseq_output}' "
-#         + config["params"]["PathSeq"]
+
+rule PathSeqPipelineSpark:
+    input:
+        bam_file = config["PathSeq"]["bam_file"],
+        host_bwa_image = HOST_BWA_IMAGE_INDEX,
+        microbe_bwa_image = config["PathSeq"]["microbe_bwa_image"],
+        microbe_fasta_file = config["PathSeq"]["microbe_fasta"],
+        host_hss_file = HOST_HSS_FILE,
+        taxonomy_db = config["PathSeq"]["taxonomy_db"]
+    output:
+        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam"),
+        pathseq_output = join("output", "PathSeq", "{patient}-{sample}", "pathseq.txt")
+    shell:
+        "module load GATK/{GATK_VERSION} && "
+        "gatk PathSeqPipelineSpark "
+        "--is-host-aligned true "
+        "--input '{input.bam_file}' "
+        "--filter-bwa-image '{input.host_bwa_image}' "
+        "--kmer-file '{input.host_hss_file}' "
+        "--microbe-fasta '{input.microbe_fasta_file}' "
+        "--microbe-bwa-image '{input.microbe_bwa_image}' "
+        "--taxonomy-file '{input.taxonomy_db}' "
+        "--output '{output.pathseq_bam}' "
+        "--scores-output '{output.pathseq_output}' "
+        + config["params"]["PathSeq"]["pipeline"]
 
 
 # Rules for building host files
+
 rule build_host_kmer_file:
     input:
         get_ref_genome
     output:
         HOST_HSS_FILE
     shell:
-        "module load GATK/4.1.3.0 && "
+        "module load GATK/{GATK_VERSION} && "
         "gatk PathSeqBuildKmers "
         "--java-options '-Xmx80g' "
         "--reference '{input}' "
@@ -128,5 +137,5 @@ rule build_host_BWA_image:
     output:
         HOST_BWA_IMAGE_INDEX
     shell:
-        "module load GATK/4.1.3.0 && "
+        "module load GATK/{GATK_VERSION} && "
         "gatk BwaMemIndexImageCreator -I {input} -O {output}"
