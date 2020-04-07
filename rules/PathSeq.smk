@@ -10,7 +10,7 @@ PAIRED_ALIGNED_BAM = join("output", "PathSeq", "{patient}-{sample}", "aligned-pa
 UNPAIRED_ALIGNED_BAM = join("output", "PathSeq", "{patient}-{sample}", "aligned-unpaired.bam")
 
 # params
-GATK_VERSION = "4.1.3.0"
+GATK_VERSION = "4.1.6.0"
 # rule get_num_properly_paired_microbial_reads:
 #     input:
 #         PATHSEQ_BAM_FILE
