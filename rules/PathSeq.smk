@@ -4,7 +4,7 @@ HOST_HSS_FILE = join("output", "PathSeq", "host.hss")
 HOST_BWA_IMAGE_INDEX = join("output", "PathSeq", "host.fasta.img")
 
 PAIRED_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "filtered-paired.bam")
-UNPAIRED_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "unfiltered-unpaired.bam")
+UNPAIRED_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "filtered-unpaired.bam")
 PATHSEQ_FILTER_FILE = join("output", "PathSeq", "{patient}-{sample}", "filter-metrics.txt")
 PAIRED_ALIGNED_BAM = join("output", "PathSeq", "{patient}-{sample}", "aligned-paired.bam")
 UNPAIRED_ALIGNED_BAM = join("output", "PathSeq", "{patient}-{sample}", "aligned-unpaired.bam")
