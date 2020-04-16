@@ -30,11 +30,11 @@ GATK_VERSION = "4.1.6.0"
 #         "samtools view -f 0x2 {input} | wc -l > {output}"
 
 # functions
-def get_ref_genome(wildcards):
-    try:
-        return config["PathSeq"]["genome"]
-    except:
-        return config["ref"]["genome"]
+# def get_ref_genome(wildcards):
+#     try:
+#         return config["PathSeq"]["genome"]
+#     except:
+#         return config["ref"]["genome"]
 
 # rules for running PathSeqSpark
 
@@ -121,7 +121,7 @@ rule PathSeqPipelineSpark:
 
 rule build_host_kmer_file:
     input:
-        get_ref_genome
+        config["ref"]["genome"]
     output:
         HOST_HSS_FILE
     shell:
@@ -133,7 +133,7 @@ rule build_host_kmer_file:
 
 rule build_host_BWA_image:
     input:
-        get_ref_genome
+        config["ref"]["genome"]
     output:
         HOST_BWA_IMAGE_INDEX
     shell:

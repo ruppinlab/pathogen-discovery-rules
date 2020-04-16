@@ -1,23 +1,67 @@
 from os.path import join, dirname
 
-# files
-KRAKEN_OUTPUT_FILE = join("output", "Kraken", "{patient}-{sample}", "sequences.kraken")
-KRAKEN_TRANSLATE_FILE = join("output", "Kraken", "{patient}-{sample}", "sequences_mpa_report.txt")
-KRAKEN_BIOM_FILE = join("output", "Kraken", "{patient}-{sample}", "sequences.biom")
+# input files
+PAIRED_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "filtered-paired.bam")
+UNPAIRED_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "filtered-unpaired.bam")
+
+# intermediate files
+SORTED_PAIRED_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "filtered-paired.bam")
+PAIRED_FILTERED_FQ1 = join("output", "Kraken", "{patient}-{sample}", "filtered-paired.fq1")
+PAIRED_FILTERED_FQ2 = join("output", "Kraken", "{patient}-{sample}", "filtered-paired.fq2")
+UNPAIRED_FILTERED_FQ = join("output", "Kraken", "{patient}-{sample}", "filtered-unpaired.fq")
+
+# output files
+KRAKEN_PAIRED_OUTPUT_FILE = join("output", "Kraken", "{patient}-{sample}", "paired-sequences.kraken")
+KRAKEN_UNPAIRED_OUTPUT_FILE = join("output", "Kraken", "{patient}-{sample}", "unpaired-sequences.kraken")
+KRAKEN_PAIRED_TRANSLATE_FILE = join("output", "Kraken", "{patient}-{sample}", "paired-sequences_mpa_report.txt")
+KRAKEN_UNPAIRED_TRANSLATE_FILE = join("output", "Kraken", "{patient}-{sample}", "unpaired-sequences_mpa_report.txt")
+KRAKEN_PAIRED_BIOM_FILE = join("output", "Kraken", "{patient}-{sample}", "paired-sequences.biom")
+KRAKEN_UNPAIRED_BIOM_FILE = join("output", "Kraken", "{patient}-{sample}", "unpaired-sequences.biom")
 # scripts
 KRAKEN_TO_BIOM_SCRIPT = join(dirname(srcdir("kraken.smk")), "..", "src", "parse_kraken_to_biom.py")
+
+include: "PathSeq.smk"
+
+rule sort_bam_by_queryname:
+    input:
+        PAIRED_FILTERED_BAM
+    output:
+        temp(SORTED_PAIRED_FILTERED_BAM)
+    shell:
+        "module load samtools && "
+        "samtools sort -n {input} {output}"
+
+rule paired_bam_to_fastq:
+    input:
+        SORTED_PAIRED_FILTERED_BAM
+    output:
+        fq1=temp(PAIRED_FILTERED_FQ1),
+        fq2=temp(PAIRED_FILTERED_FQ2)
+    shell:
+        "module load bedtools && "
+        "bedtools bamtofastq -i {input} -fq {output.fq1} -fq2 {output.fq2}"
+
+rule unpaired_bam_to_fastq:
+    input:
+        UNPAIRED_FILTERED_BAM
+    output:
+        temp(UNPAIRED_FILTERED_FQ)
+    shell:
+        "module load bedtools && "
+        "bedtools bamtofastq -i {input} -fq {output}"
 
 # biowulf kraken help page - https://hpc.nih.gov/apps/kraken.html
 # key idea - copy the DB into memory via "cp -r $DB /dev/shm"
 # 20180220_standard DB is about 200GB in size
-rule run_Kraken:
+# run Kraken for paired-end reads filtered by PathSeqSparkFilter
+rule run_Kraken_paired_reads:
     params:
         dbname = config["Kraken"]["dbname"] # this is a directory
     input:
-        fq1 = expand(join("FASTQ", "raw", "{patient}-{sample}_1.fastq.gz"), zip, patient=samples["patient"], sample=samples["sample"]),
-        fq2 = expand(join("FASTQ", "raw", "{patient}-{sample}_2.fastq.gz"), zip, patient=samples["patient"], sample=samples["sample"]),
+        fq1 = expand(PAIRED_FILTERED_FQ1, zip, patient=samples["patient"], sample=samples["sample"]),
+        fq2 = expand(PAIRED_FILTERED_FQ2, zip, patient=samples["patient"], sample=samples["sample"]),
     output:
-        expand(KRAKEN_OUTPUT_FILE, zip, patient=samples["patient"], sample=samples["sample"])
+        expand(KRAKEN_PAIRED_OUTPUT_FILE, zip, patient=samples["patient"], sample=samples["sample"])
     run:
         shell("module load kraken/1.1")
         shell("trap 'rm -rf /dev/shm/{params.dbname}' EXIT")
@@ -30,13 +74,32 @@ rule run_Kraken:
                 "{fq1} {fq2}"
                 )
 
-rule run_Kraken_translate:
+rule run_Kraken_unpaired_reads:
+    params:
+        dbname = config["Kraken"]["dbname"] # this is a directory
+    input:
+        fq = expand(UNPAIRED_FILTERED_FQ, zip, patient=samples["patient"], sample=samples["sample"]),
+    output:
+        expand(KRAKEN_UNPAIRED_OUTPUT_FILE, zip, patient=samples["patient"], sample=samples["sample"])
+    run:
+        shell("module load kraken/1.1")
+        shell("trap 'rm -rf /dev/shm/{params.dbname}' EXIT")
+        shell("cp -r /fdb/kraken/{params.dbname} /dev/shm")
+        for fq, o in zip(input.fq, output):
+            shell(
+                "kraken --db /dev/shm/{params.dbname} --fastq-input "
+                "--gzip-compressed --check-names --output {o} "
+                + config["params"]["Kraken"] + " "
+                "{fq}"
+                )
+
+rule run_Kraken_translate_paired_reads:
     params:
         dbname = config["Kraken"]["dbname"]
     input:
-        expand(KRAKEN_OUTPUT_FILE, zip, patient=samples["patient"], sample=samples["sample"])
+        expand(KRAKEN_PAIRED_OUTPUT_FILE, zip, patient=samples["patient"], sample=samples["sample"])
     output:
-        expand(KRAKEN_TRANSLATE_FILE, zip, patient=samples["patient"], sample=samples["sample"])
+        expand(KRAKEN_PAIRED_TRANSLATE_FILE, zip, patient=samples["patient"], sample=samples["sample"])
     run:
         shell("module load kraken/1.1")
         shell("trap 'rm -rf /dev/shm/{params.dbname}' EXIT")
@@ -47,14 +110,42 @@ rule run_Kraken_translate:
                 "--mpa-format {i} > {o}"
                 )
 
+rule run_Kraken_translate_unpaired_reads:
+    params:
+        dbname = config["Kraken"]["dbname"]
+    input:
+        expand(KRAKEN_UNPAIRED_OUTPUT_FILE, zip, patient=samples["patient"], sample=samples["sample"])
+    output:
+        expand(KRAKEN_UNPAIRED_TRANSLATE_FILE, zip, patient=samples["patient"], sample=samples["sample"])
+    run:
+        shell("module load kraken/1.1")
+        shell("trap 'rm -rf /dev/shm/{params.dbname}' EXIT")
+        shell("cp -r /fdb/kraken/{params.dbname} /dev/shm")
+        for i, o in zip(input, output):
+            shell(
+                "kraken-translate --db /dev/shm/{params.dbname} "
+                "--mpa-format {i} > {o}"
+                )
 
-rule parse_Kraken_to_biom:
+rule parse_paired_Kraken_to_biom:
     conda:
         "../envs/kraken_biom_parser.yaml"
     input:
-        KRAKEN_TRANSLATE_FILE
+        KRAKEN_PAIRED_TRANSLATE_FILE
     output:
-        KRAKEN_BIOM_FILE
+        KRAKEN_PAIRED_BIOM_FILE
+    shell:
+        "python {KRAKEN_TO_BIOM_SCRIPT} --kraken-translate-report-fp {input} "
+        "--taxonomic-rank " + config["Kraken"]["taxonomic_rank"] + " "
+        "--biom-output-fp {output}"
+
+rule parse_unpaired_Kraken_to_biom:
+    conda:
+        "../envs/kraken_biom_parser.yaml"
+    input:
+        KRAKEN_UNPAIRED_TRANSLATE_FILE
+    output:
+        KRAKEN_UNPAIRED_BIOM_FILE
     shell:
         "python {KRAKEN_TO_BIOM_SCRIPT} --kraken-translate-report-fp {input} "
         "--taxonomic-rank " + config["Kraken"]["taxonomic_rank"] + " "
