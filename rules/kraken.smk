@@ -5,7 +5,7 @@ PAIRED_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "filtered-
 UNPAIRED_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "filtered-unpaired.bam")
 
 # intermediate files
-SORTED_PAIRED_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "filtered-paired.bam")
+SORTED_PAIRED_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "sorted-filtered-paired.bam")
 PAIRED_FILTERED_FQ1 = join("output", "Kraken", "{patient}-{sample}", "filtered-paired.fq1")
 PAIRED_FILTERED_FQ2 = join("output", "Kraken", "{patient}-{sample}", "filtered-paired.fq2")
 UNPAIRED_FILTERED_FQ = join("output", "Kraken", "{patient}-{sample}", "filtered-unpaired.fq")
@@ -19,6 +19,8 @@ KRAKEN_PAIRED_BIOM_FILE = join("output", "Kraken", "{patient}-{sample}", "paired
 KRAKEN_UNPAIRED_BIOM_FILE = join("output", "Kraken", "{patient}-{sample}", "unpaired-sequences.biom")
 # scripts
 KRAKEN_TO_BIOM_SCRIPT = join(dirname(srcdir("kraken.smk")), "..", "src", "parse_kraken_to_biom.py")
+
+localrules: sort_bam_by_queryname, paired_bam_to_fastq, unpaired_bam_to_fastq
 
 include: "PathSeq.smk"
 
