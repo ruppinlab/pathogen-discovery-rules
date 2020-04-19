@@ -82,7 +82,7 @@ rule PathSeqFilterSpark_paired_only:
         "--filter-metrics '{output.filter_metrics}' "
         + config["params"]["PathSeq"]["filter"]
 
-rule PathSeqFilterSpark_upaired_only:
+rule PathSeqFilterSpark_unpaired_only:
     wildcard_constraints:
         sample = "|".join(samples_with_only_unpaired_reads)
     input:
