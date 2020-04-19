@@ -63,7 +63,7 @@ GATK_VERSION = "4.1.6.0"
 
 rule PathSeqFilterSpark_paired_only:
     wildcard_constraints:
-        sample = join(samples_with_only_paired_reads, sep="|")
+        sample = "|".join(samples_with_only_paired_reads)
     input:
         bam_file = config["PathSeq"]["bam_file"],
         host_bwa_image = HOST_BWA_IMAGE_INDEX,
@@ -84,7 +84,7 @@ rule PathSeqFilterSpark_paired_only:
 
 rule PathSeqFilterSpark_upaired_only:
     wildcard_constraints:
-        sample = join(samples_with_only_unpaired_reads, sep="|")
+        sample = "|".join(samples_with_only_unpaired_reads)
     input:
         bam_file = config["PathSeq"]["bam_file"],
         host_bwa_image = HOST_BWA_IMAGE_INDEX,
