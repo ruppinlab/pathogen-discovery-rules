@@ -11,6 +11,8 @@
 # to add your own fa file, use
 # kraken-build --add-to-library *.fa --db $DBNAME
 rule build_Kraken_DB:
+    conda:
+        "../envs/kraken.yml"
     input:
         fasta=config["Kraken"]["microbe_fasta"]
     output:
