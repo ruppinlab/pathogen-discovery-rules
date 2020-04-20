@@ -18,7 +18,6 @@ rule build_Kraken_DB:
     output:
         db=join(config["Kraken"]["db_path"], config["Kraken"]["dbname"])
     shell:
-        "module load kraken/1.1 && "
         "kraken-build --download-taxonomy --db {output.db} && "
         "kraken-build --add-to-library {input.fasta} --db {output.db} && "
         "kraken-build --build --db {output.db} " + config["params"]["Kraken"]
