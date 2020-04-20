@@ -24,18 +24,18 @@ localrules: sort_bam_by_queryname, paired_bam_to_fastq, unpaired_bam_to_fastq
 
 include: "PathSeq.smk"
 
-rule sort_bam_by_queryname:
-    input:
-        PAIRED_FILTERED_BAM
-    output:
-        temp(SORTED_PAIRED_FILTERED_BAM)
-    shell:
-        "module load samtools && "
-        "samtools sort -n {input} {output}"
+# rule sort_bam_by_queryname:
+#     input:
+#         PAIRED_FILTERED_BAM
+#     output:
+#         temp(SORTED_PAIRED_FILTERED_BAM)
+#     shell:
+#         "module load samtools && "
+#         "samtools sort -n {input} {output}"
 
 rule paired_bam_to_fastq:
     input:
-        SORTED_PAIRED_FILTERED_BAM
+        PAIRED_FILTERED_BAM
     output:
         fq1=temp(PAIRED_FILTERED_FQ1),
         fq2=temp(PAIRED_FILTERED_FQ2)
