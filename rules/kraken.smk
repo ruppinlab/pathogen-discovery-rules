@@ -20,7 +20,7 @@ KRAKEN_UNPAIRED_BIOM_FILE = join("output", "Kraken", "{patient}-{sample}", "unpa
 # scripts
 KRAKEN_TO_BIOM_SCRIPT = join(dirname(srcdir("kraken.smk")), "..", "src", "parse_kraken_to_biom.py")
 
-localrules: sort_bam_by_queryname, paired_bam_to_fastq, unpaired_bam_to_fastq
+localrules: paired_bam_to_fastq, unpaired_bam_to_fastq
 
 include: "PathSeq.smk"
 
@@ -62,6 +62,7 @@ rule run_Kraken_paired_reads:
     input:
         fq1 = expand(PAIRED_FILTERED_FQ1, zip, patient=samples["patient"], sample=samples["sample"]),
         fq2 = expand(PAIRED_FILTERED_FQ2, zip, patient=samples["patient"], sample=samples["sample"]),
+        db = join(config["Kraken"]["db_path"], config["Kraken"]["dbname"], "database.kdb")
     output:
         expand(KRAKEN_PAIRED_OUTPUT_FILE, zip, patient=samples["patient"], sample=samples["sample"])
     run:
@@ -81,6 +82,7 @@ rule run_Kraken_unpaired_reads:
         dbname = config["Kraken"]["dbname"] # this is a directory
     input:
         fq = expand(UNPAIRED_FILTERED_FQ, zip, patient=samples["patient"], sample=samples["sample"]),
+        db = join(config["Kraken"]["db_path"], config["Kraken"]["dbname"], "database.kdb")
     output:
         expand(KRAKEN_UNPAIRED_OUTPUT_FILE, zip, patient=samples["patient"], sample=samples["sample"])
     run:

@@ -13,10 +13,12 @@
 rule build_Kraken_DB:
     conda:
         "../envs/kraken.yml"
+    params:
+        dir = join(config["Kraken"]["db_path"], config["Kraken"]["dbname"])
     input:
         fasta=config["Kraken"]["microbe_fasta"]
     output:
-        db=join(config["Kraken"]["db_path"], config["Kraken"]["dbname"])
+        db=join(config["Kraken"]["db_path"], config["Kraken"]["dbname"], "database.kdb")
     shell:
         "kraken-build --download-taxonomy --db {output.db} && "
         "kraken-build --add-to-library {input.fasta} --db {output.db} && "
