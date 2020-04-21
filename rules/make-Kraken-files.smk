@@ -20,6 +20,6 @@ rule build_Kraken_DB:
     output:
         db=join(config["Kraken"]["db_path"], config["Kraken"]["dbname"], "database.kdb")
     shell:
-        "kraken-build --download-taxonomy --db {output.db} && "
-        "kraken-build --add-to-library {input.fasta} --db {output.db} && "
-        "kraken-build --build --db {output.db} " + config["params"]["Kraken"]
+        "kraken-build --download-taxonomy --db {params.dir} && "
+        "kraken-build --add-to-library {input.fasta} --db {params.dir} && "
+        "kraken-build --build --db {params.dir} " + config["params"]["Kraken"]
