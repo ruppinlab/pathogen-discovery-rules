@@ -126,7 +126,8 @@ rule copy_PathSeqFilter_files_to_lscratch:
     group:
         "PathSeqFilter"
     shell:
-        "cp {input.host_bwa_image} {input.host_hss_file} /lscratch/$SLURM_JOBID"
+        'echo $SLURM_JOBID && '
+        'cp {input.host_bwa_image} {input.host_hss_file} /lscratch/$SLURM_JOBID'
 
 rule PathSeqFilterSpark:
     input:
