@@ -122,7 +122,7 @@ rule PathSeqFilterSpark:
         hack = "PathSeqFilter-hack.txt"
     params:
         host_bwa_image = basename(config["PathSeq"]["host_img"]),
-        host_hss_file = basename(config["PathSeq"]["host_bfi"]))
+        host_hss_file = basename(config["PathSeq"]["host_bfi"])
     output:
         paired_output = PAIRED_FILTERED_BAM,
         unpaired_output = UNPAIRED_FILTERED_BAM,
