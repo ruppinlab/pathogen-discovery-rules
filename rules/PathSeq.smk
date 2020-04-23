@@ -122,7 +122,7 @@ rule copy_PathSeqFilter_files_to_lscratch:
         host_hss_file = config["PathSeq"]["host_bfi"]
     output:
         host_bwa_image = join("/lscratch/$SLURM_JOBID", basename(config["PathSeq"]["host_img"])),
-        host_hss_image = join("/lscratch/$SLURM_JOBID", basename(config["PathSeq"]["host_bfi"]))
+        host_hss_file = join("/lscratch/$SLURM_JOBID", basename(config["PathSeq"]["host_bfi"]))
     group:
         "PathSeqFilter"
     shell:
@@ -132,7 +132,7 @@ rule PathSeqFilterSpark:
     input:
         bam_file = config["PathSeq"]["bam_file"],
         host_bwa_image = join("/lscratch/$SLURM_JOBID", basename(config["PathSeq"]["host_img"])),
-        host_hss_image = join("/lscratch/$SLURM_JOBID", basename(config["PathSeq"]["host_bfi"]))
+        host_hss_file = join("/lscratch/$SLURM_JOBID", basename(config["PathSeq"]["host_bfi"]))
     output:
         paired_output = PAIRED_FILTERED_BAM,
         unpaired_output = UNPAIRED_FILTERED_BAM,
