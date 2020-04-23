@@ -75,7 +75,7 @@ rule run_Kraken_paired_reads:
         shell("cp -r {params.db} /dev/shm")
         for fq1, fq2, o, l in zip(input.fq1, input.fq2, output.o, output.l):
             shell(
-                "module load kraken/1.1 && "
+                "module load kraken && "
                 "kraken --db /dev/shm/{params.dbname} --fastq-input --paired "
                 "--check-names --output {o} "
                 + config["params"]["Kraken"] + " "
@@ -97,7 +97,7 @@ rule run_Kraken_unpaired_reads:
         shell("cp -r {params.db} /dev/shm")
         for fq, o, l in zip(input.fq, output.o, output.l):
             shell(
-                "module load kraken/1.1 && "
+                "module load kraken && "
                 "kraken --db /dev/shm/{params.dbname} --fastq-input "
                 "--check-names --output {o} "
                 + config["params"]["Kraken"] + " "
@@ -117,7 +117,7 @@ rule run_Kraken_translate_paired_reads:
         shell("cp -r {params.db} /dev/shm")
         for i, o in zip(input, output):
             shell(
-                "module load kraken/1.1 && "
+                "module load kraken && "
                 "kraken-translate --db /dev/shm/{params.dbname} "
                 "--mpa-format {i} > {o}"
                 )
@@ -135,7 +135,7 @@ rule run_Kraken_translate_unpaired_reads:
         shell("cp -r {params.db} /dev/shm")
         for i, o in zip(input, output):
             shell(
-                "module load kraken/1.1 && "
+                "module load kraken && "
                 "kraken-translate --db /dev/shm/{params.dbname} "
                 "--mpa-format {i} > {o}"
                 )

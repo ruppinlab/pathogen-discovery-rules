@@ -11,8 +11,6 @@
 # to add your own fa file, use
 # kraken-build --add-to-library *.fa --db $DBNAME
 rule build_Kraken_DB:
-    conda:
-        "../envs/kraken.yml"
     params:
         dir = join(config["Kraken"]["db_path"], config["Kraken"]["dbname"])
     input:
@@ -20,6 +18,8 @@ rule build_Kraken_DB:
     output:
         db=join(config["Kraken"]["db_path"], config["Kraken"]["dbname"], "database.kdb")
     shell:
+        "module load kraken && "  # load kraken/1.1.1
         "kraken-build --download-taxonomy --db {params.dir} && "
         "kraken-build --add-to-library {input.fasta} --db {params.dir} && "
         "kraken-build --build --db {params.dir} " + config["params"]["Kraken"]
+        + " && kraken-build --db {params.dir} --clean"
