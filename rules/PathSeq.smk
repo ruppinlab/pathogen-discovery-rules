@@ -140,6 +140,7 @@ rule PathSeqFilterSpark:
                 "--unpaired-output '{o2}' "
                 "--filter-metrics '{f}' "
                 + config["params"]["PathSeq"]["filter"]
+                )
 
 # rule PathSeqBwaSpark:
 #     input:
