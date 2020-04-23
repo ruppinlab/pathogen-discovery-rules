@@ -10,6 +10,9 @@ PAIRED_FILTERED_FQ1 = join("output", "Kraken", "{patient}-{sample}", "filtered-p
 PAIRED_FILTERED_FQ2 = join("output", "Kraken", "{patient}-{sample}", "filtered-paired.fq2")
 UNPAIRED_FILTERED_FQ = join("output", "Kraken", "{patient}-{sample}", "filtered-unpaired.fq")
 
+# log files
+KRAKEN_PAIRED_LOG_FILE = join("output", "Kraken", "{patient}-{sample}", "paired-log.txt")
+KRAKEN_UNPAIRED_LOG_FILE = join("output", "Kraken", "{patient}-{sample}", "unpaired-log.txt")
 # output files
 KRAKEN_PAIRED_OUTPUT_FILE = join("output", "Kraken", "{patient}-{sample}", "paired-sequences.kraken")
 KRAKEN_UNPAIRED_OUTPUT_FILE = join("output", "Kraken", "{patient}-{sample}", "unpaired-sequences.kraken")
@@ -65,17 +68,18 @@ rule run_Kraken_paired_reads:
         fq2 = expand(PAIRED_FILTERED_FQ2, zip, patient=samples["patient"], sample=samples["sample"]),
         db = join(config["Kraken"]["db_path"], config["Kraken"]["dbname"], "database.kdb")
     output:
-        expand(KRAKEN_PAIRED_OUTPUT_FILE, zip, patient=samples["patient"], sample=samples["sample"])
+        o = expand(KRAKEN_PAIRED_OUTPUT_FILE, zip, patient=samples["patient"], sample=samples["sample"]),
+        l = expand(KRAKEN_PAIRED_LOG_FILE, zip, patient=samples["patient"], sample=samples["sample"])
     run:
         shell("trap 'rm -rf /dev/shm/{params.dbname}' EXIT")
         shell("cp -r {params.db} /dev/shm")
-        for fq1, fq2, o in zip(input.fq1, input.fq2, output):
+        for fq1, fq2, o, l in zip(input.fq1, input.fq2, output.o, output.l):
             shell(
                 "module load kraken/1.1 && "
                 "kraken --db /dev/shm/{params.dbname} --fastq-input --paired "
                 "--check-names --output {o} "
                 + config["params"]["Kraken"] + " "
-                "{fq1} {fq2}"
+                "{fq1} {fq2} > {l}"
                 )
 
 rule run_Kraken_unpaired_reads:
@@ -86,17 +90,18 @@ rule run_Kraken_unpaired_reads:
         fq = expand(UNPAIRED_FILTERED_FQ, zip, patient=samples["patient"], sample=samples["sample"]),
         db = join(config["Kraken"]["db_path"], config["Kraken"]["dbname"], "database.kdb")
     output:
-        expand(KRAKEN_UNPAIRED_OUTPUT_FILE, zip, patient=samples["patient"], sample=samples["sample"])
+        o = expand(KRAKEN_UNPAIRED_OUTPUT_FILE, zip, patient=samples["patient"], sample=samples["sample"]),
+        l = expand(KRAKEN_UNPAIRED_LOG_FILE, zip, patient=samples["patient"], sample=samples["sample"])
     run:
         shell("trap 'rm -rf /dev/shm/{params.dbname}' EXIT")
         shell("cp -r {params.db} /dev/shm")
-        for fq, o in zip(input.fq, output):
+        for fq, o, l in zip(input.fq, output.o, output.l):
             shell(
                 "module load kraken/1.1 && "
                 "kraken --db /dev/shm/{params.dbname} --fastq-input "
                 "--check-names --output {o} "
                 + config["params"]["Kraken"] + " "
-                "{fq}"
+                "{fq} > {l}"
                 )
 
 rule run_Kraken_translate_paired_reads:
