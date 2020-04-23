@@ -116,33 +116,39 @@ def get_bam_files(wildcards):
 #     }
 #     return output_files
 
-rule PathSeqFilterSpark:
+rule copy_PathSeqFilter_files_to_lscratch:
     input:
-        bam_files = get_bam_files,
         host_bwa_image = config["PathSeq"]["host_img"],
         host_hss_file = config["PathSeq"]["host_bfi"]
-    params:
-        host_bwa_image = join("/lscratch/$SLURM_JOBID", basename(config["PathSeq"]["host_img"])),
-        host_hss_image = join("/lscratch/$SLURM_JOBID", basename(config["PathSeq"]["host_bfi"])),
     output:
-        paired_output = expand(PAIRED_FILTERED_BAM, sample=samples.loc[samples.patient == "{patient}"]["sample"], patient="{patient}"),
-        unpaired_output = expand(UNPAIRED_FILTERED_BAM, sample=samples.loc[samples.patient == "{patient}"]["sample"], patient="{patient}"),
-        filter_metrics = expand(PATHSEQ_FILTER_FILE, sample=samples.loc[samples.patient == "{patient}"]["sample"], patient="{patient}")
-    run:
-        shell("mkdir -p /lscratch/$SLURM_JOBID/tmp")
-        shell("cp {input.host_bwa_image} {input.host_hss_file} /lscratch/$SLURM_JOBID")
-        for b, o1, o2, f in zip(input.bam_files, output.paired_output, output.unpaired_output, output.filter_metrics):
-            shell(
-                "module load GATK/{GATK_VERSION} && "
-                "gatk PathSeqFilterSpark "
-                "--input '{b}' "
-                "--filter-bwa-image '{params.host_bwa_image}' "
-                "--kmer-file '{params.host_hss_file}' "
-                "--paired-output '{o1}' "
-                "--unpaired-output '{o2}' "
-                "--filter-metrics '{f}' "
-                + config["params"]["PathSeq"]["filter"]
-                )
+        host_bwa_image = join("/lscratch/$SLURM_JOBID", basename(config["PathSeq"]["host_img"])),
+        host_hss_image = join("/lscratch/$SLURM_JOBID", basename(config["PathSeq"]["host_bfi"]))
+    group:
+        "PathSeqFilter"
+    shell:
+        "cp {input.host_bwa_image} {input.host_hss_file} /lscratch/$SLURM_JOBID"
+
+rule PathSeqFilterSpark:
+    input:
+        bam_file = config["PathSeq"]["bam_file"],
+        host_bwa_image = join("/lscratch/$SLURM_JOBID", basename(config["PathSeq"]["host_img"])),
+        host_hss_image = join("/lscratch/$SLURM_JOBID", basename(config["PathSeq"]["host_bfi"]))
+    output:
+        paired_output = PAIRED_FILTERED_BAM,
+        unpaired_output = UNPAIRED_FILTERED_BAM,
+        filter_metrics = PATHSEQ_FILTER_FILE,
+    group:
+        "PathSeqFilter"
+    shell:
+        "module load GATK/{GATK_VERSION} && "
+        "gatk PathSeqFilterSpark "
+        "--input '{input.bam_file}' "
+        "--filter-bwa-image '{input.host_bwa_image}' "
+        "--kmer-file '{input.host_hss_file}' "
+        "--paired-output '{output.paired_output}' "
+        "--unpaired-output '{output.unpaired_output}' "
+        "--filter-metrics '{output.filter_metrics}' "
+        + config["params"]["PathSeq"]["filter"]
 
 # rule PathSeqBwaSpark:
 #     input:
