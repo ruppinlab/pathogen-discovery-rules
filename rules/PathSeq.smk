@@ -107,14 +107,14 @@ def get_bam_files(wildcards):
     samples = samples.loc[samples.patient == wildcards.patient]
     return expand(config["PathSeq"]["bam_file"], sample=samples["sample"], patient=wildcards.patient)
 
-def get_output_files(wildcards):
-    samples = samples.loc[samples.patient == wildcards.patient]
-    output_files = {
-        "paired_output": expand(PAIRED_FILTERED_BAM, sample=samples["sample"], patient=wildcards.patient),
-        "unpaired_output": expand(UNPAIRED_FILTERED_BAM, sample=samples["sample"], patient=wildcards.patient),
-        "filter_metrics": expand(PATHSEQ_FILTER_FILE, sample=samples["sample"], patient=wildcards.patient)
-    }
-    return output_files
+# def get_output_files(wildcards):
+#     samples = samples.loc[samples.patient == wildcards.patient]
+#     output_files = {
+#         "paired_output": expand(PAIRED_FILTERED_BAM, sample=samples["sample"], patient=wildcards.patient),
+#         "unpaired_output": expand(UNPAIRED_FILTERED_BAM, sample=samples["sample"], patient=wildcards.patient),
+#         "filter_metrics": expand(PATHSEQ_FILTER_FILE, sample=samples["sample"], patient=wildcards.patient)
+#     }
+#     return output_files
 
 rule PathSeqFilterSpark:
     input:
@@ -125,10 +125,12 @@ rule PathSeqFilterSpark:
         host_bwa_image = join("/lscratch/$SLURM_JOBID", basename(config["PathSeq"]["host_img"])),
         host_hss_image = join("/lscratch/$SLURM_JOBID", basename(config["PathSeq"]["host_bfi"])),
     output:
-        get_output_files
-    shell:
-        "mkdir -p /lscratch/$SLURM_JOBID/tmp && "
-        "cp {input.host_bwa_image} {input.host_hss_file} /lscratch/$SLURM_JOBID && "
+        paired_output = expand(PAIRED_FILTERED_BAM, sample=samples.loc[samples.patient == "{patient}"]["sample"], patient="{patient}),
+        unpaired_output = expand(UNPAIRED_FILTERED_BAM, sample=samples.loc[samples.patient == "{patient}"]["sample"], patient="{patient}),
+        filter_metrics = expand(PATHSEQ_FILTER_FILE, sample=samples.loc[samples.patient == "{patient}"]["sample"], patient="{patient})
+    run:
+        shell("mkdir -p /lscratch/$SLURM_JOBID/tmp")
+        shell("cp {input.host_bwa_image} {input.host_hss_file} /lscratch/$SLURM_JOBID")
         for b, o1, o2, f in zip(input.bam_files, output.paired_output, output.unpaired_output, output.filter_metrics):
             shell(
                 "module load GATK/{GATK_VERSION} && "
