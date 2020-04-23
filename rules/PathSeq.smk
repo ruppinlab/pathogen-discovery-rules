@@ -125,9 +125,9 @@ rule PathSeqFilterSpark:
         host_bwa_image = join("/lscratch/$SLURM_JOBID", basename(config["PathSeq"]["host_img"])),
         host_hss_image = join("/lscratch/$SLURM_JOBID", basename(config["PathSeq"]["host_bfi"])),
     output:
-        paired_output = expand(PAIRED_FILTERED_BAM, sample=samples.loc[samples.patient == "{patient}"]["sample"], patient="{patient}),
-        unpaired_output = expand(UNPAIRED_FILTERED_BAM, sample=samples.loc[samples.patient == "{patient}"]["sample"], patient="{patient}),
-        filter_metrics = expand(PATHSEQ_FILTER_FILE, sample=samples.loc[samples.patient == "{patient}"]["sample"], patient="{patient})
+        paired_output = expand(PAIRED_FILTERED_BAM, sample=samples.loc[samples.patient == "{patient}"]["sample"], patient="{patient}"),
+        unpaired_output = expand(UNPAIRED_FILTERED_BAM, sample=samples.loc[samples.patient == "{patient}"]["sample"], patient="{patient}"),
+        filter_metrics = expand(PATHSEQ_FILTER_FILE, sample=samples.loc[samples.patient == "{patient}"]["sample"], patient="{patient}")
     run:
         shell("mkdir -p /lscratch/$SLURM_JOBID/tmp")
         shell("cp {input.host_bwa_image} {input.host_hss_file} /lscratch/$SLURM_JOBID")
