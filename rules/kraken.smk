@@ -58,7 +58,8 @@ rule unpaired_bam_to_fastq:
 # run Kraken for paired-end reads filtered by PathSeqSparkFilter
 rule run_Kraken_paired_reads:
     params:
-        dbname = config["Kraken"]["dbname"] # this is a directory
+        dbname = config["Kraken"]["dbname"], # this is the name of the directory
+        db = join(config["Kraken"]["db_path"], config["Kraken"]["dbname"])
     input:
         fq1 = expand(PAIRED_FILTERED_FQ1, zip, patient=samples["patient"], sample=samples["sample"]),
         fq2 = expand(PAIRED_FILTERED_FQ2, zip, patient=samples["patient"], sample=samples["sample"]),
@@ -67,7 +68,7 @@ rule run_Kraken_paired_reads:
         expand(KRAKEN_PAIRED_OUTPUT_FILE, zip, patient=samples["patient"], sample=samples["sample"])
     run:
         shell("trap 'rm -rf /dev/shm/{params.dbname}' EXIT")
-        shell("cp -r /fdb/kraken/{params.dbname} /dev/shm")
+        shell("cp -r {params.db} /dev/shm")
         for fq1, fq2, o in zip(input.fq1, input.fq2, output):
             shell(
                 "module load kraken/1.1 && "
@@ -79,7 +80,8 @@ rule run_Kraken_paired_reads:
 
 rule run_Kraken_unpaired_reads:
     params:
-        dbname = config["Kraken"]["dbname"] # this is a directory
+        dbname = config["Kraken"]["dbname"], # this is the name of the directory
+        db = join(config["Kraken"]["db_path"], config["Kraken"]["dbname"])
     input:
         fq = expand(UNPAIRED_FILTERED_FQ, zip, patient=samples["patient"], sample=samples["sample"]),
         db = join(config["Kraken"]["db_path"], config["Kraken"]["dbname"], "database.kdb")
@@ -87,7 +89,7 @@ rule run_Kraken_unpaired_reads:
         expand(KRAKEN_UNPAIRED_OUTPUT_FILE, zip, patient=samples["patient"], sample=samples["sample"])
     run:
         shell("trap 'rm -rf /dev/shm/{params.dbname}' EXIT")
-        shell("cp -r /fdb/kraken/{params.dbname} /dev/shm")
+        shell("cp -r {params.db} /dev/shm")
         for fq, o in zip(input.fq, output):
             shell(
                 "module load kraken/1.1 && "
@@ -99,14 +101,15 @@ rule run_Kraken_unpaired_reads:
 
 rule run_Kraken_translate_paired_reads:
     params:
-        dbname = config["Kraken"]["dbname"]
+        dbname = config["Kraken"]["dbname"], # this is the name of the directory
+        db = join(config["Kraken"]["db_path"], config["Kraken"]["dbname"]) # this is the path to the direction
     input:
         expand(KRAKEN_PAIRED_OUTPUT_FILE, zip, patient=samples["patient"], sample=samples["sample"])
     output:
         expand(KRAKEN_PAIRED_TRANSLATE_FILE, zip, patient=samples["patient"], sample=samples["sample"])
     run:
         shell("trap 'rm -rf /dev/shm/{params.dbname}' EXIT")
-        shell("cp -r /fdb/kraken/{params.dbname} /dev/shm")
+        shell("cp -r {params.db} /dev/shm")
         for i, o in zip(input, output):
             shell(
                 "module load kraken/1.1 && "
@@ -116,14 +119,15 @@ rule run_Kraken_translate_paired_reads:
 
 rule run_Kraken_translate_unpaired_reads:
     params:
-        dbname = config["Kraken"]["dbname"]
+        dbname = config["Kraken"]["dbname"], # this is a name
+        db = join(config["Kraken"]["db_path"], config["Kraken"]["dbname"])
     input:
         expand(KRAKEN_UNPAIRED_OUTPUT_FILE, zip, patient=samples["patient"], sample=samples["sample"])
     output:
         expand(KRAKEN_UNPAIRED_TRANSLATE_FILE, zip, patient=samples["patient"], sample=samples["sample"])
     run:
         shell("trap 'rm -rf /dev/shm/{params.dbname}' EXIT")
-        shell("cp -r /fdb/kraken/{params.dbname} /dev/shm")
+        shell("cp -r {params.db} /dev/shm")
         for i, o in zip(input, output):
             shell(
                 "module load kraken/1.1 && "
