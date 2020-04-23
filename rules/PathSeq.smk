@@ -133,12 +133,12 @@ rule PathSeqFilterSpark:
             shell(
                 "module load GATK/{GATK_VERSION} && "
                 "gatk PathSeqFilterSpark "
-                "--input '{input.bam_file}' "
-                "--filter-bwa-image '{input.host_bwa_image}' "
-                "--kmer-file '{input.host_hss_file}' "
-                "--paired-output '{output.o1}' "
-                "--unpaired-output '{output.unpaired_output}' "
-                "--filter-metrics '{output.filter_metrics}' "
+                "--input '{b}' "
+                "--filter-bwa-image '{params.host_bwa_image}' "
+                "--kmer-file '{params.host_hss_file}' "
+                "--paired-output '{o1}' "
+                "--unpaired-output '{o2}' "
+                "--filter-metrics '{f}' "
                 + config["params"]["PathSeq"]["filter"]
 
 # rule PathSeqBwaSpark:
