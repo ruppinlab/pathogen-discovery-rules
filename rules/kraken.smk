@@ -55,6 +55,21 @@ rule unpaired_bam_to_fastq:
         "module load bedtools && "
         "bedtools bamtofastq -i {input} -fq {output}"
 
+rule load_Kraken_DB_to_memory:
+    input:
+        db = join(config["Kraken"]["db_path"], config["Kraken"]["dbname"], "database.kdb")
+    params:
+        dbname = config["Kraken"]["dbname"], # this is the name of the directory
+        db = join(config["Kraken"]["db_path"], config["Kraken"]["dbname"])
+    output:
+        temp(touch("Kraken-hack-{batch}.txt"))
+    group:
+        "Kraken"
+    shell:
+        "trap 'rm -rf /dev/shm/{params.dbname}' EXIT && "
+        "cp -r {params.db} /dev/shm && "
+        "module load kraken"
+
 # biowulf kraken help page - https://hpc.nih.gov/apps/kraken.html
 # key idea - copy the DB into memory via "cp -r $DB /dev/shm"
 # 20180220_standard DB is about 200GB in size
@@ -62,25 +77,20 @@ rule unpaired_bam_to_fastq:
 rule run_Kraken_paired_reads:
     params:
         dbname = config["Kraken"]["dbname"], # this is the name of the directory
-        db = join(config["Kraken"]["db_path"], config["Kraken"]["dbname"])
     input:
-        fq1 = expand(PAIRED_FILTERED_FQ1, zip, patient=samples["patient"], sample=samples["sample"]),
-        fq2 = expand(PAIRED_FILTERED_FQ2, zip, patient=samples["patient"], sample=samples["sample"]),
-        db = join(config["Kraken"]["db_path"], config["Kraken"]["dbname"], "database.kdb")
+        fq1 = PAIRED_FILTERED_FQ1,
+        fq2 = PAIRED_FILTERED_FQ2,
+        h = "Kraken-hack-{batch}.txt"
     output:
-        o = expand(KRAKEN_PAIRED_OUTPUT_FILE, zip, patient=samples["patient"], sample=samples["sample"]),
-        l = expand(KRAKEN_PAIRED_LOG_FILE, zip, patient=samples["patient"], sample=samples["sample"])
-    run:
-        shell("trap 'rm -rf /dev/shm/{params.dbname}' EXIT")
-        shell("cp -r {params.db} /dev/shm")
-        for fq1, fq2, o, l in zip(input.fq1, input.fq2, output.o, output.l):
-            shell(
-                "module load kraken && "
-                "kraken --db /dev/shm/{params.dbname} --fastq-input --paired "
-                "--check-names --output {o} "
-                + config["params"]["Kraken"] + " "
-                "{fq1} {fq2} > {l}"
-                )
+        join("output", "Kraken", "{patient}-{sample}", "{batch}-paired-sequences.kraken")
+    group:
+        "Kraken"
+    shell:
+        "module load kraken && "
+        "kraken --db /dev/shm/{params.dbname} --fastq-input --paired "
+        "--check-names --output {output} "
+        + config["params"]["Kraken"] + " "
+        "{input.fq1} {input.fq2}"
 
 rule run_Kraken_unpaired_reads:
     params:
