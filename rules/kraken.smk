@@ -67,8 +67,7 @@ rule load_Kraken_DB_to_memory:
         "Kraken"
     shell:
         "trap 'rm -rf /dev/shm/{params.dbname}' EXIT && "
-        "cp -r {params.db} /dev/shm && "
-        "module load kraken"
+        "cp -r {params.db} /dev/shm"
 
 # biowulf kraken help page - https://hpc.nih.gov/apps/kraken.html
 # key idea - copy the DB into memory via "cp -r $DB /dev/shm"
@@ -82,7 +81,7 @@ rule run_Kraken_paired_reads:
         fq2 = PAIRED_FILTERED_FQ2,
         h = "Kraken-hack-{batch}.txt"
     output:
-        join("output", "Kraken", "{patient}-{sample}", "{batch}-paired-sequences.kraken")
+        temp(join("output", "Kraken", "{patient}-{sample}", "{batch}-paired-sequences.kraken"))
     group:
         "Kraken"
     shell:

@@ -114,8 +114,7 @@ rule copy_PathSeqFilter_files_to_lscratch:
         "PathSeqFilter"
     shell:
         "mkdir /lscratch/$SLURM_JOBID/tmp && "
-        "cp {input.host_bwa_image} {input.host_hss_file} /lscratch/$SLURM_JOBID && "
-        "module load GATK/{GATK_VERSION"
+        "cp {input.host_bwa_image} {input.host_hss_file} /lscratch/$SLURM_JOBID"
 
 rule PathSeqFilterSpark:
     input:
@@ -133,7 +132,7 @@ rule PathSeqFilterSpark:
     threads:
         8
     shell:
-        #"module load GATK/{GATK_VERSION} && "
+        "module load GATK/{GATK_VERSION} && "
         "gatk PathSeqFilterSpark "
         "--input '{input.bam_file}' "
         "--filter-bwa-image /lscratch/$SLURM_JOBID/{params.host_bwa_image} "
