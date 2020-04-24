@@ -113,8 +113,9 @@ rule copy_PathSeqFilter_files_to_lscratch:
     group:
         "PathSeqFilter"
     shell:
-        'mkdir /lscratch/$SLURM_JOBID/tmp && '
-        'cp {input.host_bwa_image} {input.host_hss_file} /lscratch/$SLURM_JOBID'
+        "mkdir /lscratch/$SLURM_JOBID/tmp && "
+        "cp {input.host_bwa_image} {input.host_hss_file} /lscratch/$SLURM_JOBID && "
+        "module load GATK/{GATK_VERSION"
 
 rule PathSeqFilterSpark:
     input:
@@ -124,15 +125,15 @@ rule PathSeqFilterSpark:
         host_bwa_image = basename(config["PathSeq"]["host_img"]),
         host_hss_file = basename(config["PathSeq"]["host_bfi"])
     output:
-        paired_output = join("output", "PathSeq", "{patient}-{sample}", "{batch}-filtered-paired.bam"),
-        unpaired_output = join("output", "PathSeq", "{patient}-{sample}", "{batch}-filtered-unpaired.bam"),
-        filter_metrics = join("output", "PathSeq", "{patient}-{sample}", "{batch}-filter-metrics.txt"),
+        paired_output = temp(join("output", "PathSeq", "{patient}-{sample}", "{batch}-filtered-paired.bam")),
+        unpaired_output = temp(join("output", "PathSeq", "{patient}-{sample}", "{batch}-filtered-unpaired.bam")),
+        filter_metrics = temp(join("output", "PathSeq", "{patient}-{sample}", "{batch}-filter-metrics.txt")),
     group:
         "PathSeqFilter"
     threads:
         8
     shell:
-        "module load GATK/{GATK_VERSION} && "
+        #"module load GATK/{GATK_VERSION} && "
         "gatk PathSeqFilterSpark "
         "--input '{input.bam_file}' "
         "--filter-bwa-image /lscratch/$SLURM_JOBID/{params.host_bwa_image} "
