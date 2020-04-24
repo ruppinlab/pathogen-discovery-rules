@@ -147,7 +147,7 @@ rule copy_PathSeqBwa_files_to_lscratch:
         microbe_bwa_image = config["PathSeq"]["microbe_bwa_image"],
         microbe_fasta_file = config["PathSeq"]["microbe_fasta"]
     output:
-        temp(touch("PathSeqFilter-hack-{batch}.txt"))
+        temp(touch("PathSeqBwa-hack-{batch}.txt"))
     group:
         "PathSeqBwa"
     shell:
@@ -159,7 +159,7 @@ rule PathSeqBwaSpark:
     input:
         paired_input = PAIRED_FILTERED_BAM,
         unpaired_input = UNPAIRED_FILTERED_BAM,
-        h = "PathSeqFilter-hack-{batch}.txt"
+        h = "PathSeqBwa-hack-{batch}.txt"
     params
         microbe_bwa_image = basename(config["PathSeq"]["microbe_bwa_image"]),
         microbe_fasta_file = basename(config["PathSeq"]["microbe_fasta"])
@@ -175,8 +175,8 @@ rule PathSeqBwaSpark:
         "gatk PathSeqBwaSpark "
         "--paired-input '{input.paired_input}' "
         "--unpaired-input '{input.unpaired_input}' "
-        "--microbe-fasta /lscratch/$SLURM_JOBID/{input.microbe_fasta_file} "
-        "--microbe-bwa-image /lscratch/$SLURM_JOBID/{input.microbe_bwa_image} "
+        "--microbe-fasta /lscratch/$SLURM_JOBID/{params.microbe_fasta_file} "
+        "--microbe-bwa-image /lscratch/$SLURM_JOBID/{params.microbe_bwa_image} "
         "--paired-output '{output.paired_output}' "
         "--unpaired-output '{output.unpaired_output}' "
         + config["params"]["PathSeq"]["BWA"]
