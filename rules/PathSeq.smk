@@ -160,7 +160,7 @@ rule PathSeqBwaSpark:
         paired_input = PAIRED_FILTERED_BAM,
         unpaired_input = UNPAIRED_FILTERED_BAM,
         h = "PathSeqBwa-hack-{batch}.txt"
-    params
+    params:
         microbe_bwa_image = basename(config["PathSeq"]["microbe_bwa_image"]),
         microbe_fasta_file = basename(config["PathSeq"]["microbe_fasta"])
     output:
