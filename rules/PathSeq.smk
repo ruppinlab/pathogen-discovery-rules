@@ -5,9 +5,9 @@ from os.path import join, basename
 #HOST_HSS_FILE = join("output", "PathSeq", "host.hss")
 #HOST_BWA_IMAGE_INDEX = join("output", "PathSeq", "host.fasta.img")
 
-PAIRED_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "filtered-paired.bam")
-UNPAIRED_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "filtered-unpaired.bam")
-PATHSEQ_FILTER_FILE = join("output", "PathSeq", "{patient}-{sample}", "filter-metrics.txt")
+# PAIRED_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "filtered-paired.bam")
+# UNPAIRED_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "filtered-unpaired.bam")
+# PATHSEQ_FILTER_FILE = join("output", "PathSeq", "{patient}-{sample}", "filter-metrics.txt")
 PAIRED_ALIGNED_BAM = join("output", "PathSeq", "{patient}-{sample}", "aligned-paired.bam")
 UNPAIRED_ALIGNED_BAM = join("output", "PathSeq", "{patient}-{sample}", "aligned-unpaired.bam")
 
@@ -109,7 +109,7 @@ rule copy_PathSeqFilter_files_to_lscratch:
         host_bwa_image = config["PathSeq"]["host_img"],
         host_hss_file = config["PathSeq"]["host_bfi"]
     output:
-        temp(touch("PathSeqFilter-hack.txt"))
+        temp(touch("PathSeqFilter-hack-{batch}.txt"))
     group:
         "PathSeqFilter"
     shell:
@@ -119,16 +119,18 @@ rule copy_PathSeqFilter_files_to_lscratch:
 rule PathSeqFilterSpark:
     input:
         bam_file = config["PathSeq"]["bam_file"],
-        hack = "PathSeqFilter-hack.txt"
+        hack = "PathSeqFilter-hack-{batch}.txt"
     params:
         host_bwa_image = basename(config["PathSeq"]["host_img"]),
         host_hss_file = basename(config["PathSeq"]["host_bfi"])
     output:
-        paired_output = PAIRED_FILTERED_BAM,
-        unpaired_output = UNPAIRED_FILTERED_BAM,
-        filter_metrics = PATHSEQ_FILTER_FILE,
+        paired_output = join("output", "PathSeq", "{patient}-{sample}", "{batch}-filtered-paired.bam"),
+        unpaired_output = join("output", "PathSeq", "{patient}-{sample}", "{batch}-filtered-unpaired.bam"),
+        filter_metrics = join("output", "PathSeq", "{patient}-{sample}", "{batch}-filter-metrics.txt"),
     group:
         "PathSeqFilter"
+    threads:
+        8
     shell:
         "module load GATK/{GATK_VERSION} && "
         "gatk PathSeqFilterSpark "
