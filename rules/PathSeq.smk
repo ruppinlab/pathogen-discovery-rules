@@ -8,8 +8,8 @@ from os.path import join, basename
 # PAIRED_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "filtered-paired.bam")
 # UNPAIRED_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "filtered-unpaired.bam")
 # PATHSEQ_FILTER_FILE = join("output", "PathSeq", "{patient}-{sample}", "filter-metrics.txt")
-PAIRED_ALIGNED_BAM = join("output", "PathSeq", "{patient}-{sample}", "aligned-paired.bam")
-UNPAIRED_ALIGNED_BAM = join("output", "PathSeq", "{patient}-{sample}", "aligned-unpaired.bam")
+# PAIRED_ALIGNED_BAM = join("output", "PathSeq", "{patient}-{sample}", "aligned-paired.bam")
+# UNPAIRED_ALIGNED_BAM = join("output", "PathSeq", "{patient}-{sample}", "aligned-unpaired.bam")
 
 # samples_with_only_paired_reads = [
 #     "SRR7667576", "SRR7667864", "SRR7667841", "SRR7667837", "SRR7667795", "SRR7667801",
@@ -142,25 +142,44 @@ rule PathSeqFilterSpark:
         "--filter-metrics '{output.filter_metrics}' "
         + config["params"]["PathSeq"]["filter"]
 
-# rule PathSeqBwaSpark:
-#     input:
-#         paired_input = PAIRED_FILTERED_BAM,
-#         unpaired_input = UNPAIRED_FILTERED_BAM,
-#         microbe_bwa_image = config["PathSeq"]["microbe_bwa_image"],
-#         microbe_fasta_file = config["PathSeq"]["microbe_fasta"]
-#     output:
-#         paired_output = PAIRED_ALIGNED_BAM,
-#         unpaired_output = UNPAIRED_ALIGNED_BAM
-#     shell:
-#         "module load GATK/{GATK_VERSION} && "
-#         "gatk PathSeqBwaSpark "
-#         "--paired-input '{input.paired_input}' "
-#         "--unpaired-input '{input.unpaired_input}' "
-#         "--microbe-fasta '{input.microbe_fasta_file}' "
-#         "--microbe-bwa-image '{input.microbe_bwa_image}' "
-#         "--paired-output '{output.paired_output}' "
-#         "--unpaired-output '{output.unpaired_output}' "
-#         + config["params"]["PathSeq"]["BWA"]
+rule copy_PathSeqBwa_files_to_lscratch:
+    input:
+        microbe_bwa_image = config["PathSeq"]["microbe_bwa_image"],
+        microbe_fasta_file = config["PathSeq"]["microbe_fasta"]
+    output:
+        temp(touch("PathSeqFilter-hack-{batch}.txt"))
+    group:
+        "PathSeqBwa"
+    shell:
+        "mkdir /lscratch/$SLURM_JOBID/tmp && "
+        "cp {input.microbe_bwa_image} {input.microbe_fasta_file} /lscratch/$SLURM_JOBID"
+
+
+rule PathSeqBwaSpark:
+    input:
+        paired_input = PAIRED_FILTERED_BAM,
+        unpaired_input = UNPAIRED_FILTERED_BAM,
+        h = "PathSeqFilter-hack-{batch}.txt"
+    params
+        microbe_bwa_image = basename(config["PathSeq"]["microbe_bwa_image"]),
+        microbe_fasta_file = basename(config["PathSeq"]["microbe_fasta"])
+    output:
+        paired_output = join("output", "PathSeq", "{patient}-{sample}", "{batch}-aligned-paired.bam"),
+        unpaired_output = join("output", "PathSeq", "{patient}-{sample}", "{batch}-aligned-unpaired.bam")
+    threads:
+        8
+    group:
+        "PathSeqBwa"
+    shell:
+        "module load GATK/{GATK_VERSION} && "
+        "gatk PathSeqBwaSpark "
+        "--paired-input '{input.paired_input}' "
+        "--unpaired-input '{input.unpaired_input}' "
+        "--microbe-fasta /lscratch/$SLURM_JOBID/{input.microbe_fasta_file} "
+        "--microbe-bwa-image /lscratch/$SLURM_JOBID/{input.microbe_bwa_image} "
+        "--paired-output '{output.paired_output}' "
+        "--unpaired-output '{output.unpaired_output}' "
+        + config["params"]["PathSeq"]["BWA"]
 
 # rule PathSeqScoreSpark:
 #     input:
