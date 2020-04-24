@@ -146,13 +146,15 @@ rule copy_PathSeqBwa_files_to_lscratch:
     input:
         microbe_bwa_image = config["PathSeq"]["microbe_bwa_image"],
         microbe_fasta_file = config["PathSeq"]["microbe_fasta"]
+    params:
+        microbe_path = config["PathSeq"]["microbe_fasta"].replace("fa", "")
     output:
         temp(touch("PathSeqBwa-hack-{batch}.txt"))
     group:
         "PathSeqBwa"
     shell:
         "mkdir /lscratch/$SLURM_JOBID/tmp && "
-        "cp {input.microbe_bwa_image} {input.microbe_fasta_file} /lscratch/$SLURM_JOBID"
+        "cp {params.microbe_path}* /lscratch/$SLURM_JOBID"
 
 
 rule PathSeqBwaSpark:
