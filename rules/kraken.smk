@@ -76,6 +76,7 @@ rule load_Kraken_DB_to_memory:
 rule run_Kraken_paired_reads:
     params:
         dbname = config["Kraken"]["dbname"], # this is the name of the directory
+        db = join(config["Kraken"]["db_path"], config["Kraken"]["dbname"])
     input:
         fq1 = expand(PAIRED_FILTERED_FQ1, zip, patient=samples["patient"], sample=samples["sample"]),
         fq2 = expand(PAIRED_FILTERED_FQ2, zip, patient=samples["patient"], sample=samples["sample"]),
