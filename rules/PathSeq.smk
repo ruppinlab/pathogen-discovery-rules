@@ -24,7 +24,11 @@ rule PathSeqPipelineSpark_batch:
         filter_metrics = expand(join("output", "PathSeq", "{patient}-{sample}", "filter-metrics.txt"), zip, sample=samples["sample"], patient=samples["patient"])
     run:
         shell("mkdir /lscratch/$SLURM_JOBID/tmp")
-        shell("cp /data/Robinson-SB/PathSeq-data/* /lscratch/$SLURM_JOBID")
+        shell("cp {input.host_bwa_image} /lscratch/$SLURM_JOBID/")
+        shell("cp {input.microbe_bwa_image} /lscratch/$SLURM_JOBID/")
+        shell("cp {input.microbe_fasta_file} /lscratch/$SLURM_JOBID/")
+        shell("cp {input.host_hss_file} /lscratch/$SLURM_JOBID/")
+        shell("cp {input.taxonomy_db} /lscratch/$SLURM_JOBID/")
         for bam_file, pathseq_bam, pathseq_output, filter_metrics in zip(input.bam_file, output.pathseq_bam, output.pathseq_output, output.filter_metrics):
             shell(
                 "module load GATK/4.1.6.0 && "
