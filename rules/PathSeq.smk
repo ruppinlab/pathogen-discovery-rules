@@ -10,12 +10,16 @@ rule PathSeqPipelineSpark_batch:
         host_bwa_image = config["PathSeq"]["host_img"],
         microbe_bwa_image = config["PathSeq"]["microbe_bwa_image"],
         microbe_fasta_file = config["PathSeq"]["microbe_fasta"],
+        microbe_fai_file = config["PathSeq"]["microbe_fai"],
+        microbe_dict_file = config["PathSeq"]["microbe_dict"],
         host_hss_file = config["PathSeq"]["host_bfi"],
         taxonomy_db = config["PathSeq"]["taxonomy_db"]
     params:
         host_bwa_image = basename(config["PathSeq"]["host_img"]),
         microbe_bwa_image = basename(config["PathSeq"]["microbe_bwa_image"]),
         microbe_fasta_file = basename(config["PathSeq"]["microbe_fasta"]),
+        microbe_fai_file = basename(config["PathSeq"]["microbe_fai"]),
+        microbe_dict_file = basename(config["PathSeq"]["microbe_dict"]),
         host_hss_file = basename(config["PathSeq"]["host_bfi"]),
         taxonomy_db = basename(config["PathSeq"]["taxonomy_db"])
     output:
@@ -27,8 +31,11 @@ rule PathSeqPipelineSpark_batch:
         shell("cp {input.host_bwa_image} /lscratch/$SLURM_JOBID/")
         shell("cp {input.microbe_bwa_image} /lscratch/$SLURM_JOBID/")
         shell("cp {input.microbe_fasta_file} /lscratch/$SLURM_JOBID/")
+        shell("cp {input.microbe_fai_file} /lscratch/$SLURM_JOBID/")
+        shell("cp {input.microbe_dict_file} /lscratch/$SLURM_JOBID/")
         shell("cp {input.host_hss_file} /lscratch/$SLURM_JOBID/")
         shell("cp {input.taxonomy_db} /lscratch/$SLURM_JOBID/")
+        shell("ls /lscratch/$SLURM_JOBID/")
         for bam_file, pathseq_bam, pathseq_output, filter_metrics in zip(input.bam_file, output.pathseq_bam, output.pathseq_output, output.filter_metrics):
             shell(
                 "module load GATK/4.1.6.0 && "
