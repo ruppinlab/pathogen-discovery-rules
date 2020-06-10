@@ -4,7 +4,7 @@ from os.path import join, basename
 # params
 GATK_VERSION = "4.1.6.0"
 
-rule PathSeqPipelineSpark_batch:
+rule PathSeqPipelineSpark:
     input:
         bam_file = expand(config["PathSeq"]["bam_file"], zip, sample=samples["sample"], patient=samples["patient"]),
         host_bwa_image = config["PathSeq"]["host_img"],
@@ -35,7 +35,6 @@ rule PathSeqPipelineSpark_batch:
         shell("cp {input.microbe_dict_file} /lscratch/$SLURM_JOBID/")
         shell("cp {input.host_hss_file} /lscratch/$SLURM_JOBID/")
         shell("cp {input.taxonomy_db} /lscratch/$SLURM_JOBID/")
-        shell("ls /lscratch/$SLURM_JOBID/")
         for bam_file, pathseq_bam, pathseq_output, filter_metrics in zip(input.bam_file, output.pathseq_bam, output.pathseq_output, output.filter_metrics):
             shell(
                 "module load GATK/4.1.6.0 && "
