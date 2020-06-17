@@ -1,72 +1,65 @@
-include: "PathSeq.smk"
+from os.path import join, basename
 
-SC_PATHSEQ_OUTPUT = join("output", "scPathSeq", "{patient}.{sample}")
 
-FILTERED_FASTA_FILE = join(SC_PATHSEQ_OUTPUT, "CB.UB.STAR.filtered.fasta")
-FILTERED_PATHSEQ_FASTA_FILE = join(SC_PATHSEQ_OUTPUT, "PathSeq.filtered.fasta")
-PATHSEQ_QNAME_FILE = join(SC_PATHSEQ_OUTPUT, "QNAME.PathSeq.tsv")
-PATHSEQ_YP_FILE = join(SC_PATHSEQ_OUTPUT, "YP.PathSeq.tsv")
-STAR_QNAME_FILE = join(SC_PATHSEQ_OUTPUT, "QNAME.STAR.tsv")
-STAR_CB_FILE = join(SC_PATHSEQ_OUTPUT, "CB.STAR.tsv")
-STAR_UB_FILE = join(SC_PATHSEQ_OUTPUT, "UB.STAR.tsv")
-QNAME_CB_UB_FILE = join(SC_PATHSEQ_OUTPUT, "QNAME.CB.UB.STAR.tsv")
-PATHSEQ_QNAME_YP_FILE = join(SC_PATHSEQ_OUTPUT, "QNAME.YP.PathSeq.tsv")
-FILTERED_PATHSEQ_READS_FILE = join(SC_PATHSEQ_OUTPUT, "Filtered_PathSeq_reads.tsv")
+PATHSEQ_BAM = join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam")
+PATHSEQ_TAG_BAM = join("output", "PathSeq", "{patient}-{sample}", "pathseq_with_tags.bam")
+PATHSEQ_TAG_BAI = join("output", "PathSeq", "{patient}-{sample}", "pathseq_with_tags.bam.bai")
+PATHSEQ_CELL_BAM = join("output", "PathSeq", "{patient}-{sample}-{cell}", "pathseq_with_tags.bam")
+PATHSEQ_CELL_SCORE = join("output", "PathSeq", "{patient}-{sample}-{cell}", "pathseq.txt")
 
-rule combine_PathSeq_STAR:
+
+rule PathSeqScoreSpark:
+    group:
+        "cell"
+    input:
+        bam_file = PATHSEQ_CELL_BAM,
+        taxonomy_db = config["PathSeq"]["taxonomy_db"]
+    params:
+        taxonomy_db = basename(config["PathSeq"]["taxonomy_db"])
+    output:
+        pathseq_output = PATHSEQ_CELL_SCORE
+    run:
+        shell("mkdir /lscratch/$SLURM_JOBID/tmp")
+        shell("cp {input.taxonomy_db} /lscratch/$SLURM_JOBID/")
+        shell(
+            "module load GATK/4.1.6.0 && "
+            "gatk PathSeqScoreSpark "
+            "--unpaired-input '{input.bam_file}' "
+            "--taxonomy-file /lscratch/$SLURM_JOBID/{params.taxonomy_db} "
+            "--scores-output '{output.pathseq_output}' "
+            '--java-options "-Xmx30g -Xms30G -Djava.io.tmpdir=/lscratch/$SLURM_JOBID/tmp -XX:+UseG1GC -XX:ParallelGCThreads=8 -XX:ConcGCThreads=2" '
+            '--spark-master local[8] ' + config["params"]["PathSeqScore"]
+        )
+
+rule split_PathSeq_BAM_by_CB_UB:
+    group:
+        "cell"
     conda:
-        "../envs/pandas.yml"
+        "../envs/pysam.yaml"
     input:
-        qname = STAR_QNAME_FILE,
-        cb = STAR_CB_FILE,
-        ub = STAR_UB_FILE,
-        path_qname = PATHSEQ_QNAME_FILE,
-        yp = PATHSEQ_YP_FILE
+        PATHSEQ_TAG_BAM,
+        PATHSEQ_TAG_BAI
     output:
-        QNAME_CB_UB_FILE,
-        PATHSEQ_QNAME_YP_FILE,
-        FILTERED_PATHSEQ_READS_FILE
+        PATHSEQ_CELL_BAM
     script:
-        "../src/combine_PathSeq_STAR.py"
+        "../src/split_PathSeq_BAM_by_CB_UB.py"
 
-rule extract_QNAME_YP_from_PathSeq_FASTA:
+rule add_CB_UB_tags_to_PathSeq_BAM:
+    conda:
+        "../envs/pysam.yaml"
     input:
-        FILTERED_PATHSEQ_FASTA_FILE
+        CR_BAM_FILE,
+        PATHSEQ_BAM
     output:
-        PATHSEQ_QNAME_FILE,
-        PATHSEQ_YP_FILE
-    shell:
-        "cat {input} | cut -f 1 > {output[0]} && "
-        "cat {input} | grep -E -o 'YP:Z:([0-9]+,?)+' > {output[1]}"
+        PATHSEQ_TAG_BAM,
+    script:
+        "../src/add_tags_to_PathSeq_bam.py"
 
-rule extract_QNAME_from_BAM_FILE:
+rule index_PathSeq_BAM_with_tags:
     input:
-        FILTERED_FASTA_FILE
+        PATHSEQ_TAG_BAM
     output:
-        STAR_QNAME_FILE,
-        STAR_CB_FILE,
-        STAR_UB_FILE
-    shell:
-        "cat {input} | cut -f 1 > {output[0]} && "
-        "cat {input} | grep -E -o 'CB:Z:[G,A,T,C]+' > {output[1]} && "
-        "cat {input} | grep -E -o 'UB:Z:[G,A,T,C]+' > {output[2]}"
-
-# filter only the reads that PathSeq mapped to microbial genomes
-rule filter_PathSeq_bam:
-    input:
-        join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam")
-    output:
-        FILTERED_PATHSEQ_FASTA_FILE
+        PATHSEQ_TAG_BAI
     shell:
         "module load samtools && "
-        "samtools view {input} | grep -E 'YP:Z:*' > {output}"
-
-# we only want reads with UB and CB tags
-rule filter_BAM_FILE:
-    input:
-        join("output", "STARsolo", "{patient}-{sample}", "Aligned.sortedByCoord.out.bam")
-    output:
-        FILTERED_FASTA_FILE
-    shell:
-        "module load samtools && "
-        "samtools view {input} | grep -E 'UB:Z:*' | grep -E 'CB:Z:*' > {output}"
+        "samtools index {input}"
