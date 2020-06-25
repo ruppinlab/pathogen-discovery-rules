@@ -7,33 +7,26 @@ PATHSEQ_TAG_BAI = join("output", "PathSeq", "{patient}-{sample}", "pathseq_with_
 PATHSEQ_CELL_BAM = join("output", "PathSeq", "{patient}-{sample}-{cell}", "pathseq_with_tags.bam")
 PATHSEQ_CELL_SCORE = join("output", "PathSeq", "{patient}-{sample}-{cell}", "pathseq.txt")
 
+localrules: PathSeqScoreSpark, split_PathSeq_BAM_by_CB_UB 
 
 rule PathSeqScoreSpark:
-    group:
-        "cell"
     input:
         bam_file = PATHSEQ_CELL_BAM,
         taxonomy_db = config["PathSeq"]["taxonomy_db"]
-    params:
-        taxonomy_db = basename(config["PathSeq"]["taxonomy_db"])
     output:
         pathseq_output = PATHSEQ_CELL_SCORE
     run:
-        shell("mkdir /lscratch/$SLURM_JOBID/tmp")
-        shell("cp {input.taxonomy_db} /lscratch/$SLURM_JOBID/")
         shell(
             "module load GATK/4.1.6.0 && "
             "gatk PathSeqScoreSpark "
             "--unpaired-input '{input.bam_file}' "
-            "--taxonomy-file /lscratch/$SLURM_JOBID/{params.taxonomy_db} "
+            "--taxonomy-file /lscratch/$SLURM_JOBID/{input.taxonomy_db} "
             "--scores-output '{output.pathseq_output}' "
-            '--java-options "-Xmx30g -Xms30G -Djava.io.tmpdir=/lscratch/$SLURM_JOBID/tmp -XX:+UseG1GC -XX:ParallelGCThreads=8 -XX:ConcGCThreads=2" '
-            '--spark-master local[8] ' + config["params"]["PathSeqScore"]
+            '--java-options "-Xmx30g -Xms30G -XX:+UseG1GC -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2" '
+            '--spark-master local[2] ' + config["params"]["PathSeqScore"]
         )
 
 rule split_PathSeq_BAM_by_CB_UB:
-    group:
-        "cell"
     conda:
         "../envs/pysam.yaml"
     input:
