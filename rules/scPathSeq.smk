@@ -7,7 +7,7 @@ PATHSEQ_TAG_BAI = join("output", "PathSeq", "{patient}-{sample}", "pathseq_with_
 PATHSEQ_CELL_BAM = join("output", "PathSeq", "{patient}-{sample}-{cell}", "pathseq_with_tags.bam")
 PATHSEQ_CELL_SCORE = join("output", "PathSeq", "{patient}-{sample}-{cell}", "pathseq.txt")
 
-localrules: PathSeqScoreSpark, split_PathSeq_BAM_by_CB_UB 
+localrules: PathSeqScoreSpark, split_PathSeq_BAM_by_CB_UB
 
 rule PathSeqScoreSpark:
     input:
@@ -20,7 +20,7 @@ rule PathSeqScoreSpark:
             "module load GATK/4.1.6.0 && "
             "gatk PathSeqScoreSpark "
             "--unpaired-input '{input.bam_file}' "
-            "--taxonomy-file /lscratch/$SLURM_JOBID/{input.taxonomy_db} "
+            "--taxonomy-file {input.taxonomy_db} "
             "--scores-output '{output.pathseq_output}' "
             '--java-options "-Xmx30g -Xms30G -XX:+UseG1GC -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2" '
             '--spark-master local[2] ' + config["params"]["PathSeqScore"]
