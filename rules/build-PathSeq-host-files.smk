@@ -1,5 +1,5 @@
 # params
-GATK_VERSION = "4.1.6.0"
+GATK_VERSION = "4.1.8.1"
 
 # Rules for building host files
 
@@ -13,7 +13,7 @@ rule build_host_kmer_file:
     output:
         config["PathSeq"]["host_bfi"]
     shell:
-        "module load GATK/{GATK_VERSION} && "
+        "module load GATK/4.1.8.1 && "
         "gatk PathSeqBuildKmers "
         "--java-options '-Xmx80g' "
         "--kmer-mask 16 --kmer-size 31 "
@@ -27,7 +27,7 @@ rule build_host_BWA_image:
     output:
         config["PathSeq"]["host_img"]
     shell:
-        "module load GATK/{GATK_VERSION} && "
+        "module load GATK/4.1.8.1 && "
         "gatk BwaMemIndexImageCreator -I {input} -O {output}"
 
 # build a sequence dictionary for a reference sequence
@@ -40,4 +40,4 @@ rule build_host_BWA_image:
 #     shell:
 #         "module load GATK/{GATK_VERSION} && "
 #         "gatk CreateSequenceDictionary -R {input}"
-# 
+#

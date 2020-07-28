@@ -1,5 +1,8 @@
 from os.path import join
 
+wildcard_constraints:
+    microbe=config["PathSeq"]["microbe_prefix"]
+
 NCBI_REFSEQ_FTP = "ftp://ftp.ncbi.nlm.nih.gov/refseq/release/"
 BACTERIA_REFSEQ_URL = join(NCBI_REFSEQ_FTP, "bacteria")
 

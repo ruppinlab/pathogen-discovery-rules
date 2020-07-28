@@ -49,7 +49,7 @@ rule build_taxonomy_file:
     output:
         TAXONOMY
     shell:
-        "module load GATK/4.1.3.0 && "
+        "module load GATK/4.1.8.1 && "
         "gatk PathSeqBuildReferenceTaxonomy "
         "-R '{input.fa}' "
         "--refseq-catalog '{input.catalog}' "
@@ -79,5 +79,5 @@ rule build_BWA_image:
     output:
         BWA_IMAGE_INDEX
     shell:
-        "module load GATK/4.1.3.0 && "
+        "module load GATK/4.1.8.1 && "
         "gatk BwaMemIndexImageCreator -I {input} -O {output}"
