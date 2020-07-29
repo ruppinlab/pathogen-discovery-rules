@@ -24,7 +24,7 @@ STAR_PASS2_READCOUNT_FILE = join(STAR_PASS2_OUTPUT_DIR, "ReadsPerGene.out.tab")
 HOST_READ_FILTERED_BAM_FILE = join(STAR_PASS2_OUTPUT_DIR, "host.reads.filtered.bam")
 
 # set localrules
-localrules: compute_max_readlength, calculate_max_read_length, run_star_filter_sj_pass1
+localrules: compute_max_readlength, calculate_max_read_length, run_star_filter_sj_pass1, filter_aligned_reads
 
 # functions
 def get_sjdbOverhang(file):
