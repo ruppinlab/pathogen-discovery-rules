@@ -215,7 +215,7 @@ rule run_star_se_pass1:
     conda:
         STAR_ENV_FILE
     input:
-        join("FASTQ", "trimmed", "{patient}-{sample}_3.fastq.gz"),
+        fq1 = join("FASTQ", "trimmed", "{patient}-{sample}_3.fastq.gz"),
         index = STAR_GENOME_INDEX,
         gtf = config["ref"]["annotation"],
         metadata = SAMPLE_METADATA
@@ -229,7 +229,7 @@ rule run_star_se_pass1:
     shell:
         "STAR "
         "--runThreadN {threads} "
-        "--readFilesIn '{input.fq1}' '{input.fq2}' "
+        "--readFilesIn '{input.fq1}' "
         "--alignIntronMax 1000000 "
         "--alignIntronMin 20 "
         "--alignMatesGapMax 1000000 "
@@ -267,7 +267,7 @@ rule run_star_se_pass2:
     conda:
         STAR_ENV_FILE
     input:
-        join("FASTQ", "trimmed", "{patient}-{sample}_3.fastq.gz"),
+        fq1 = join("FASTQ", "trimmed", "{patient}-{sample}_3.fastq.gz"),
         index = STAR_GENOME_INDEX,
         gtf = config["ref"]["annotation"],
         sj = STAR_SE_PASS1_SJ_FILTERED_FILE,
@@ -283,7 +283,7 @@ rule run_star_se_pass2:
     shell:
         "STAR "
         "--runThreadN {threads} "
-        "--readFilesIn '{input.fq1}' '{input.fq2}' "
+        "--readFilesIn '{input.fq1}' "
         "--alignIntronMax 1000000 "
         "--alignIntronMin 20 "
         "--alignMatesGapMax 1000000 "
