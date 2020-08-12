@@ -27,10 +27,12 @@ STAR_PASS2_BAM_FILE = join(STAR_PASS2_OUTPUT_DIR, "Aligned.out.bam")
 STAR_PASS2_READCOUNT_FILE = join(STAR_PASS2_OUTPUT_DIR, "ReadsPerGene.out.tab")
 STAR_SE_PASS2_BAM_FILE = join(STAR_SE_PASS2_OUTPUT_DIR, "Aligned.out.bam")
 STAR_SE_PASS2_READCOUNT_FILE = join(STAR_SE_PASS2_OUTPUT_DIR, "ReadsPerGene.out.tab")
+HOST_READ_FILTERED_PE_BAM_FILE = join(STAR_SE_PASS2_OUTPUT_DIR, "host.reads.filtered.bam")
+HOST_READ_FILTERED_SE_BAM_FILE = join(STAR_PASS2_OUTPUT_DIR, "host.reads.filtered.bam")
 HOST_READ_FILTERED_BAM_FILE = join(STAR_OUTPUT_DIR, "host.reads.filtered.bam")
 
 # set localrules
-localrules: compute_max_readlength, calculate_max_read_length, run_star_filter_sj_pass1, filter_aligned_reads, run_star_filter_sj_se_pass1
+# localrules: compute_max_readlength, calculate_max_read_length, run_star_filter_sj_pass1, filter_aligned_reads, run_star_filter_sj_se_pass1
 
 # functions
 def get_sjdbOverhang(file):
@@ -53,14 +55,21 @@ def get_fq(wildcards):
 
 
 rule filter_aligned_reads:
+    group:
+        "STAR_2pass"
     input:
         STAR_PASS2_BAM_FILE,
         STAR_SE_PASS2_BAM_FILE,
     output:
+        HOST_READ_FILTERED_PE_BAM_FILE,
+        HOST_READ_FILTERED_SE_BAM_FILE,
         HOST_READ_FILTERED_BAM_FILE
     shell:
         "module load bamtools && "
-        "bamtools filter -tag 'uT:<=2' -in {input} -out {output}"
+        "bamtools filter -tag 'uT:<=2' -in {input[0]} -out {output[0]} && "
+        "bamtools filter -tag 'uT:<=2' -in {input[1]} -out {output[1]} && "
+        "bamtools merge -in {output[0]} -in {output[1]} -out {output[2]}"
+
 
 rule create_star_index:
     conda:
@@ -81,6 +90,8 @@ rule create_star_index:
 
 # rules
 rule compute_max_readlength:
+    group:
+        "STAR_2pass"
     conda:
         join(ENV_DIR, "pandas.yml")
     input:
@@ -91,6 +102,8 @@ rule compute_max_readlength:
         "../src/extract_max_readlength.py"
 
 rule calculate_max_read_length:
+    group:
+        "STAR_2pass"
     conda:
         join(ENV_DIR, "bbmap.yml")
     input:
@@ -105,6 +118,8 @@ rule calculate_max_read_length:
 # reads for paired-end reads
 
 rule run_star_pe_pass1:
+    group:
+        "STAR_2pass"
     conda:
         STAR_ENV_FILE
     input:
@@ -144,6 +159,8 @@ rule run_star_pe_pass1:
         + config["params"]["STAR"]
 
 rule run_star_filter_sj_pass1:
+    group:
+        "STAR_2pass"
     input:
         STAR_PASS1_SJ_FILE
     output:
@@ -157,6 +174,8 @@ rule run_star_filter_sj_pass1:
         "{input} > {output}"
 
 rule run_star_pe_pass2:
+    group:
+        "STAR_2pass"
     conda:
         STAR_ENV_FILE
     input:
@@ -212,6 +231,8 @@ rule run_star_pe_pass2:
 # reads for SE reads
 
 rule run_star_se_pass1:
+    group:
+        "STAR_2pass"
     conda:
         STAR_ENV_FILE
     input:
@@ -251,6 +272,8 @@ rule run_star_se_pass1:
         + config["params"]["STAR"]
 
 rule run_star_filter_sj_se_pass1:
+    group:
+        "STAR_2pass"
     input:
         STAR_SE_PASS1_SJ_FILE
     output:
@@ -264,6 +287,8 @@ rule run_star_filter_sj_se_pass1:
         "{input} > {output}"
 
 rule run_star_se_pass2:
+    group:
+        "STAR_2pass"
     conda:
         STAR_ENV_FILE
     input:
