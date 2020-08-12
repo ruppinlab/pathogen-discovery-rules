@@ -7,16 +7,12 @@ GATK_VERSION = "4.1.8.1"
 rule PathSeqPipelineSpark:
     input:
         bam_file = expand(config["PathSeq"]["bam_file"], zip, sample=samples["sample"], patient=samples["patient"]),
-        host_bwa_image = config["PathSeq"]["host_img"],
         microbe_bwa_image = config["PathSeq"]["microbe_bwa_image"],
         microbe_dict_file = config["PathSeq"]["microbe_dict"],
-        host_hss_file = config["PathSeq"]["host_bfi"],
         taxonomy_db = config["PathSeq"]["taxonomy_db"]
     params:
-        host_bwa_image = basename(config["PathSeq"]["host_img"]),
         microbe_bwa_image = basename(config["PathSeq"]["microbe_bwa_image"]),
         microbe_dict_file = basename(config["PathSeq"]["microbe_dict"]),
-        host_hss_file = basename(config["PathSeq"]["host_bfi"]),
         taxonomy_db = basename(config["PathSeq"]["taxonomy_db"])
     output:
         pathseq_bam = expand(join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam"), zip, sample=samples["sample"], patient=samples["patient"]),
@@ -25,18 +21,14 @@ rule PathSeqPipelineSpark:
         score_metrics = expand(join("output", "PathSeq", "{patient}-{sample}", "score-metrics.txt"), zip, sample=samples["sample"], patient=samples["patient"])
     run:
         shell("mkdir /lscratch/$SLURM_JOBID/tmp")
-        shell("cp {input.host_bwa_image} /lscratch/$SLURM_JOBID/")
         shell("cp {input.microbe_bwa_image} /lscratch/$SLURM_JOBID/")
         shell("cp {input.microbe_dict_file} /lscratch/$SLURM_JOBID/")
-        shell("cp {input.host_hss_file} /lscratch/$SLURM_JOBID/")
         shell("cp {input.taxonomy_db} /lscratch/$SLURM_JOBID/")
         for bam_file, pathseq_bam, pathseq_output, filter_metrics, score_metrics in zip(input.bam_file, output.pathseq_bam, output.pathseq_output, output.filter_metrics, output.score_metrics):
             shell(
                 "module load GATK/4.1.8.1 && "
                 "gatk PathSeqPipelineSpark "
                 "--input '{bam_file}' "
-                "--filter-bwa-image /lscratch/$SLURM_JOBID/{params.host_bwa_image} "
-                "--kmer-file /lscratch/$SLURM_JOBID/{params.host_hss_file} "
                 "--microbe-dict /lscratch/$SLURM_JOBID/{params.microbe_dict_file} "
                 "--microbe-bwa-image /lscratch/$SLURM_JOBID/{params.microbe_bwa_image} "
                 "--taxonomy-file /lscratch/$SLURM_JOBID/{params.taxonomy_db} "
