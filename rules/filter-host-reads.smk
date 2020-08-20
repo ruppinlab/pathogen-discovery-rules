@@ -107,8 +107,7 @@ rule calculate_max_read_length:
     conda:
         join(ENV_DIR, "bbmap.yml")
     input:
-        fq1 = FASTQ1_FILE,
-        fq2 = FASTQ2_FILE
+        unpack(get_fq),
     output:
         READLENGTH_HISTOGRAM
     shell:
