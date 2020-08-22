@@ -27,9 +27,11 @@ STAR_PASS2_BAM_FILE = join(STAR_PASS2_OUTPUT_DIR, "Aligned.out.bam")
 STAR_PASS2_READCOUNT_FILE = join(STAR_PASS2_OUTPUT_DIR, "ReadsPerGene.out.tab")
 STAR_SE_PASS2_BAM_FILE = join(STAR_SE_PASS2_OUTPUT_DIR, "Aligned.out.bam")
 STAR_SE_PASS2_READCOUNT_FILE = join(STAR_SE_PASS2_OUTPUT_DIR, "ReadsPerGene.out.tab")
+STAR_BAM_FILE = join(STAR_OUTPUT_DIR, "Aligned.out.bam")
 HOST_READ_FILTERED_PE_BAM_FILE = join(STAR_SE_PASS2_OUTPUT_DIR, "host.reads.filtered.bam")
 HOST_READ_FILTERED_SE_BAM_FILE = join(STAR_PASS2_OUTPUT_DIR, "host.reads.filtered.bam")
-HOST_READ_FILTERED_BAM_FILE = join(STAR_OUTPUT_DIR, "Aligned.out.bam")
+HOST_READ_FILTERED_BAM_FILE = join(STAR_OUTPUT_DIR, "host.reads.filtered.bam")
+STAR_BAM_FILE = join(STAR_OUTPUT_DIR, "Aligned.out.bam")
 
 # set localrules
 # localrules: compute_max_readlength, calculate_max_read_length, run_star_filter_sj_pass1, filter_aligned_reads, run_star_filter_sj_se_pass1
