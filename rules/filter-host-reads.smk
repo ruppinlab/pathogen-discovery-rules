@@ -29,7 +29,7 @@ STAR_SE_PASS2_BAM_FILE = join(STAR_SE_PASS2_OUTPUT_DIR, "Aligned.out.bam")
 STAR_SE_PASS2_READCOUNT_FILE = join(STAR_SE_PASS2_OUTPUT_DIR, "ReadsPerGene.out.tab")
 HOST_READ_FILTERED_PE_BAM_FILE = join(STAR_SE_PASS2_OUTPUT_DIR, "host.reads.filtered.bam")
 HOST_READ_FILTERED_SE_BAM_FILE = join(STAR_PASS2_OUTPUT_DIR, "host.reads.filtered.bam")
-HOST_READ_FILTERED_BAM_FILE = join(STAR_OUTPUT_DIR, "host.reads.filtered.bam")
+HOST_READ_FILTERED_BAM_FILE = join(STAR_OUTPUT_DIR, "Aligned.out.bam")
 
 # set localrules
 # localrules: compute_max_readlength, calculate_max_read_length, run_star_filter_sj_pass1, filter_aligned_reads, run_star_filter_sj_se_pass1
@@ -53,6 +53,17 @@ def get_fq(wildcards):
         'fq2': join(dir, "{wildcards.patient}-{wildcards.sample}_2.fastq.gz".format(wildcards=wildcards))
         }
 
+rule combine_se_pe_aligned_reads:
+    group:
+        "STAR_2pass"
+    input:
+        STAR_PASS2_BAM_FILE,
+        STAR_SE_PASS2_BAM_FILE,
+    output:
+        STAR_BAM_FILE
+    shell:
+        "module load bamtools && "
+        "bamtools merge -in {input[0]} -in {input[1]} -out {output[0]}"
 
 rule filter_aligned_reads:
     group:
@@ -132,7 +143,7 @@ rule run_star_pe_pass1:
         odir = join(STAR_PASS1_OUTPUT_DIR, ""),
         sjdbOverhang = lambda wildcards, input: get_sjdbOverhang(input.metadata)
     threads:
-        48
+        16
     shell:
         "STAR "
         "--runThreadN {threads} "
@@ -190,7 +201,7 @@ rule run_star_pe_pass2:
         odir = join(STAR_PASS2_OUTPUT_DIR, ""),
         sjdbOverhang = lambda wildcards, input: get_sjdbOverhang(input.metadata)
     threads:
-        48
+        16
     shell:
         "STAR "
         "--runThreadN {threads} "
@@ -303,7 +314,7 @@ rule run_star_se_pass2:
         odir = join(STAR_SE_PASS2_OUTPUT_DIR, ""),
         sjdbOverhang = lambda wildcards, input: get_sjdbOverhang(input.metadata)
     threads:
-        48
+        16
     shell:
         "STAR "
         "--runThreadN {threads} "
