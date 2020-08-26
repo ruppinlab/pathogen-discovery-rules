@@ -15,6 +15,11 @@ STAR_ENV_FILE = join(ENV_DIR, "star.yml")
 # STAR output directories
 STAR_GENOME_INDEX = join("output", "star-index")
 
+# Input files
+FQ1_IN = join(config["STAR"]["FASTQ_dir"], "{patient}-{sample}_1.fastq.gz")
+FQ2_IN = join(config["STAR"]["FASTQ_dir"], "{patient}-{sample}_2.fastq.gz")
+FQ3_IN = join(config["STAR"]["FASTQ_dir"], "{patient}-{sample}_3.fastq.gz")
+
 # Intemediate Files
 STAR_PASS1_SJ_FILE = join(STAR_PASS1_OUTPUT_DIR, "SJ.out.tab")
 STAR_PASS1_SJ_FILTERED_FILE = join(STAR_PASS1_OUTPUT_DIR, "SJ.filtered.out.tab")
@@ -119,7 +124,8 @@ rule calculate_max_read_length:
     conda:
         join(ENV_DIR, "bbmap.yml")
     input:
-        unpack(get_fq),
+        fq1 = FQ1_IN,
+        fq2 = FQ2_IN,
     output:
         READLENGTH_HISTOGRAM
     shell:
@@ -134,7 +140,8 @@ rule run_star_pe_pass1:
     conda:
         STAR_ENV_FILE
     input:
-        unpack(get_fq),
+        fq1 = FQ1_IN,
+        fq2 = FQ2_IN,
         index = STAR_GENOME_INDEX,
         gtf = config["ref"]["annotation"],
         metadata = SAMPLE_METADATA
@@ -190,7 +197,8 @@ rule run_star_pe_pass2:
     conda:
         STAR_ENV_FILE
     input:
-        unpack(get_fq),
+        fq1 = FQ1_IN,
+        fq2 = FQ2_IN,
         index = STAR_GENOME_INDEX,
         gtf = config["ref"]["annotation"],
         sj = STAR_PASS1_SJ_FILTERED_FILE,
@@ -247,7 +255,7 @@ rule run_star_se_pass1:
     conda:
         STAR_ENV_FILE
     input:
-        fq1 = join("FASTQ", "trimmed", "{patient}-{sample}_3.fastq.gz"),
+        fq1 = FQ3_IN,
         index = STAR_GENOME_INDEX,
         gtf = config["ref"]["annotation"],
         metadata = SAMPLE_METADATA
@@ -303,7 +311,7 @@ rule run_star_se_pass2:
     conda:
         STAR_ENV_FILE
     input:
-        fq1 = join("FASTQ", "trimmed", "{patient}-{sample}_3.fastq.gz"),
+        fq1 = FQ3_IN,
         index = STAR_GENOME_INDEX,
         gtf = config["ref"]["annotation"],
         sj = STAR_SE_PASS1_SJ_FILTERED_FILE,
