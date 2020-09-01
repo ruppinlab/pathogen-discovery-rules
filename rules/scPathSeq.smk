@@ -5,7 +5,7 @@ CR_BAM_FILE = join(CR_SAMPLE_ODIR, "outs", "possorted_genome_bam.bam")
 CR_UNMAPPED_BAM_FILE = join(CR_SAMPLE_ODIR, "outs", "unmapped.bam")
 CR_UNMAPPED_BAI_FILE = join(CR_SAMPLE_ODIR, "outs", "unmapped.bam.bai")
 CR_UNMAPPED_TRIMMED_BAM = join(CR_SAMPLE_ODIR, "outs", "unmapped.trimmed.bam")
-CR_UNMAPPED_TRIMMED_BAM = join(CR_SAMPLE_ODIR, "outs", "unmapped.trimmed.bam")
+CR_UNMAPPED_TRIMMED_QNAME_SORTED_BAM = join(CR_SAMPLE_ODIR, "outs", "unmapped.trimmed.qname.sorted.bam")
 UNMAPPED_FQ1 = join(CR_SAMPLE_ODIR, "outs", "unmapped.trimmed.fq1")
 UNMAPPED_FQ2 = join(CR_SAMPLE_ODIR, "outs", "unmapped.trimmed.fq2")
 
