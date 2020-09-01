@@ -3,7 +3,7 @@ from os.path import join, basename
 CR_SAMPLE_ODIR = "{patient}-{sample}"
 CR_BAM_FILE = join(CR_SAMPLE_ODIR, "outs", "possorted_genome_bam.bam")
 CR_UNMAPPED_BAM_FILE = join(CR_SAMPLE_ODIR, "outs", "unmapped.bam")
-CR_UNMAPPED_BAM_FILE = join(CR_SAMPLE_ODIR, "outs", "unmapped.bam.bai")
+CR_UNMAPPED_BAI_FILE = join(CR_SAMPLE_ODIR, "outs", "unmapped.bam.bai")
 CR_UNMAPPED_TRIMMED_BAM = join(CR_SAMPLE_ODIR, "outs", "unmapped.trimmed.bam")
 CR_UNMAPPED_TRIMMED_BAM = join(CR_SAMPLE_ODIR, "outs", "unmapped.trimmed.bam")
 UNMAPPED_FQ1 = join(CR_SAMPLE_ODIR, "outs", "unmapped.trimmed.fq1")
