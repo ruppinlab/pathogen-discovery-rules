@@ -11,7 +11,7 @@ TRIMMED_FQ1 = join("FASTQ", "unmapped", "trimmed" "{patient}-{sample}_1.fastq.gz
 FAILED_READS_FILE = join("FASTQ", "unmapped", "trimmed" "{patient}-{sample}_failed.fastq.gz")
 FASTP_JSON_REPORT = join("FASTQ", "unmapped", "trimmed" "{patient}-{sample}-report.json")
 FASTP_HTML_REPORT = join("FASTQ", "unmapped", "trimmed" "{patient}-{sample}-report.html")
-
+UNALIGNED_BAM = join("output", "BAM", "{patient}-{sample}-unaligned.bam")
 
 PATHSEQ_BAM = join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam")
 PATHSEQ_TAG_BAM = join("output", "PathSeq", "{patient}-{sample}", "pathseq_with_tags.bam")
@@ -51,7 +51,7 @@ rule sort_by_query_name:
         CR_UNMAPPED_TRIMMED_QNAME_SORTED_BAM
     shell:
         "module load samtools && "
-        "samtools sort -n {input} {output}"
+        "samtools sort -n -o {output} {input}"
 
 rule convert_to_fastq:
     input:
@@ -83,6 +83,19 @@ rule run_fastp:
         "--disable_adapter_trimming " # we already trimmed polyA tail and TSO
         "-i {input[0]} -o {output[0]} --failed_out {output[1]} "
         "-j {output[2]} -h {output[3]}"
+
+rule FastqToBam:
+    input:
+        TRIMMED_FQ1
+    output:
+        UNALIGNED_BAM
+    shell:
+        "module load picard && "
+        "java -jar $PICARDJARPATH/picard.jar FastqToSam "
+        "F1={input} O={output} "
+        "SM={wildcards.patient}.{wilcards.sample} "
+        "RG={wildcards.patient}.{wilcards.sample} "
+
 
 rule PathSeqScoreSpark:
     input:
