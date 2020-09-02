@@ -1,6 +1,10 @@
 from os.path import join, basename
 
+# directories
+ENV_DIR = join("..", "envs")
 CR_SAMPLE_ODIR = "{patient}-{sample}"
+
+# files
 CR_BAM_FILE = join(CR_SAMPLE_ODIR, "outs", "possorted_genome_bam.bam")
 CR_UNMAPPED_BAM_FILE = join(CR_SAMPLE_ODIR, "outs", "unmapped.bam")
 CR_UNMAPPED_BAI_FILE = join(CR_SAMPLE_ODIR, "outs", "unmapped.bam.bai")
