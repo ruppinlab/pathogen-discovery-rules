@@ -5,7 +5,7 @@ import pysam
 in_bam = pysam.AlignmentFile(snakemake.input[0], mode="rb")
 out_bam = pysam.AlignmentFile(snakemake.output[0], mode="wb", template=in_bam)
 # seg is an AlignedSegment object
-for seg in cr_bam:
+for seg in in_bam:
     # check if seg has polyA (pa) or TSO (ts) tag?
     if seg.has_tag("pa"):
         # there is a polyA tail that we need to trim from the 3' end of the read
