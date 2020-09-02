@@ -6,11 +6,11 @@ CR_UNMAPPED_BAM_FILE = join(CR_SAMPLE_ODIR, "outs", "unmapped.bam")
 CR_UNMAPPED_BAI_FILE = join(CR_SAMPLE_ODIR, "outs", "unmapped.bam.bai")
 CR_UNMAPPED_TRIMMED_BAM = join(CR_SAMPLE_ODIR, "outs", "unmapped.trimmed.bam")
 CR_UNMAPPED_TRIMMED_QNAME_SORTED_BAM = join(CR_SAMPLE_ODIR, "outs", "unmapped.trimmed.qname.sorted.bam")
-UNMAPPED_FQ1 = join("FASTQ", "unmapped", "polyA_TSO_removed" "{patient}-{sample}_1.fastq.gz")
-TRIMMED_FQ1 = join("FASTQ", "unmapped", "trimmed" "{patient}-{sample}_1.fastq.gz")
-FAILED_READS_FILE = join("FASTQ", "unmapped", "trimmed" "{patient}-{sample}_failed.fastq.gz")
-FASTP_JSON_REPORT = join("FASTQ", "unmapped", "trimmed" "{patient}-{sample}-report.json")
-FASTP_HTML_REPORT = join("FASTQ", "unmapped", "trimmed" "{patient}-{sample}-report.html")
+UNMAPPED_FQ1 = join("FASTQ", "unmapped", "polyA_TSO_removed", "{patient}-{sample}_1.fastq.gz")
+TRIMMED_FQ1 = join("FASTQ", "unmapped", "trimmed", "{patient}-{sample}_1.fastq.gz")
+FAILED_READS_FILE = join("FASTQ", "unmapped", "trimmed", "{patient}-{sample}_failed.fastq.gz")
+FASTP_JSON_REPORT = join("FASTQ", "unmapped", "trimmed", "{patient}-{sample}-report.json")
+FASTP_HTML_REPORT = join("FASTQ", "unmapped", "trimmed", "{patient}-{sample}-report.html")
 UNALIGNED_BAM = join("output", "BAM", "{patient}-{sample}-unaligned.bam")
 
 PATHSEQ_BAM = join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam")
@@ -93,8 +93,8 @@ rule FastqToBam:
         "module load picard && "
         "java -jar $PICARDJARPATH/picard.jar FastqToSam "
         "F1={input} O={output} "
-        "SM={wildcards.patient}.{wilcards.sample} "
-        "RG={wildcards.patient}.{wilcards.sample} "
+        "SM={wildcards.patient}.{wildcards.sample} "
+        "RG={wildcards.patient}.{wildcards.sample} "
 
 
 rule PathSeqScoreSpark:
