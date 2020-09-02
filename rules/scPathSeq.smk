@@ -6,8 +6,8 @@ CR_UNMAPPED_BAM_FILE = join(CR_SAMPLE_ODIR, "outs", "unmapped.bam")
 CR_UNMAPPED_BAI_FILE = join(CR_SAMPLE_ODIR, "outs", "unmapped.bam.bai")
 CR_UNMAPPED_TRIMMED_BAM = join(CR_SAMPLE_ODIR, "outs", "unmapped.trimmed.bam")
 CR_UNMAPPED_TRIMMED_QNAME_SORTED_BAM = join(CR_SAMPLE_ODIR, "outs", "unmapped.trimmed.qname.sorted.bam")
-UNMAPPED_FQ1 = join(CR_SAMPLE_ODIR, "outs", "unmapped.trimmed.fq1")
-UNMAPPED_FQ2 = join(CR_SAMPLE_ODIR, "outs", "unmapped.trimmed.fq2")
+UNMAPPED_FQ1 = join("FASTQ", "unmapped", "polyA_TSO_removed" "{patient}-{sample}.fq1")
+TRIMMED_FQ1 = join("FASTQ", "unmapped", "trimmed" "{patient}-{sample}.fq1")
 
 PATHSEQ_BAM = join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam")
 PATHSEQ_TAG_BAM = join("output", "PathSeq", "{patient}-{sample}", "pathseq_with_tags.bam")
@@ -53,12 +53,32 @@ rule convert_to_fastq:
     input:
         CR_UNMAPPED_TRIMMED_QNAME_SORTED_BAM
     output:
-        UNMAPPED_FQ1,
-        UNMAPPED_FQ2
+        UNMAPPED_FQ1
     shell:
         "module load bedtools && "
-        "bamToFastq -i {input} -fq {output[0]} -fq2 {output[1]}"
+        "bamToFastq -i {input} -fq {output[0]}"
 
+rule run_fastp:
+    conda:
+        join(ENV_DIR, "fastp.yml")
+    input:
+        UNMAPPED_FQ1
+    output:
+        TRIMMED_FQ1,
+        FAILED_READS_FILE,
+        FASTP_JSON_REPORT,
+        FASTP_HTML_REPORT
+    threads:
+        6
+    shell:
+        "fastp -w {threads} "
+        "--unqualified_percent_limit 40 " # filter reads where 40% of bases have phred quality < 15
+        "--cut_tail " # use defaults --cut_window_size 4 --cut_mean_quality 20
+        "--low_complexity_filter " # filter reads with less than 30% complexity (30% of the bases are different from the preceeding base)
+        "--length_required 25 "
+        "--disable_adapter_trimming " # we already trimmed polyA tail and TSO
+        "-i {input[0]} -o {output[0]} --failed_out {output[1]} "
+        "-j {output[2]} -h {output[3]}"
 
 rule PathSeqScoreSpark:
     input:
