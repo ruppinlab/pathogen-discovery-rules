@@ -45,7 +45,7 @@ rule sort_by_query_name:
         CR_UNMAPPED_TRIMMED_BAM
     output:
         CR_UNMAPPED_TRIMMED_QNAME_SORTED_BAM
-    script:
+    shell:
         "module load samtools && "
         "samtools sort -n {input} {output}"
 
