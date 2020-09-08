@@ -11,7 +11,7 @@ DATA_DIR = "data"
 
 # other downloaded files
 REFSEQ_CATALOG = join(RAW_DIR, "RefSeq-{release}.catalog.gz")
-NCBI_TAX_DUMP = join(RAW_DIR, "ncbi_taxdump_{date}.tar.gz")
+NCBI_TAX_DUMP = join(RAW_DIR, "ncbi_taxdump_{date}.zip")
 
 # output files
 TAXONOMY = join(DATA_DIR, "{microbe}_{release}_{date}_taxonomy.db")
