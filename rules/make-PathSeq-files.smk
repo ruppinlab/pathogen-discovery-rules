@@ -3,7 +3,7 @@ from os.path import join
 # URLs
 # currently using release 97 - usure how to include this as part of the URL
 REFSEQ_CATALOG_URL = "ftp://ftp.ncbi.nlm.nih.gov/refseq/release/release-catalog/archive/RefSeq-{release}.catalog.gz"
-NCBI_TAX_DUMP_URL = "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump_archive/taxdmp_{date}.zip"
+NCBI_TAX_DUMP_URL = "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz"
 
 # Directories
 RAW_DIR = "raw"
@@ -11,10 +11,10 @@ DATA_DIR = "data"
 
 # other downloaded files
 REFSEQ_CATALOG = join(RAW_DIR, "RefSeq-{release}.catalog.gz")
-NCBI_TAX_DUMP = join(RAW_DIR, "ncbi_taxdump_{date}.zip")
+NCBI_TAX_DUMP = join(RAW_DIR, "ncbi_taxdump.tar.gz")
 
 # output files
-TAXONOMY = join(DATA_DIR, "{microbe}_{release}_{date}_taxonomy.db")
+TAXONOMY = join(DATA_DIR, "{microbe}_{release}_taxonomy.db")
 FASTA_FILE = join(DATA_DIR, "{microbe}.fa")
 FASTA_IDX_FILE = join(DATA_DIR, "{microbe}.fa.fai")
 FASTA_DICT_FILE = join(DATA_DIR, "{microbe}.dict")
