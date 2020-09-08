@@ -1,8 +1,9 @@
 from os.path import join
 
 # URLs
-# currently using release 97 - usure how to include this as part of the URL
-REFSEQ_CATALOG_URL = "ftp://ftp.ncbi.nlm.nih.gov/refseq/release/release-catalog/archive/RefSeq-{release}.catalog.gz"
+# if not using current release, should be "ftp://ftp.ncbi.nlm.nih.gov/refseq/release/release-catalog/archive/RefSeq-{release}.catalog.gz"
+REFSEQ_CATALOG_URL = "ftp://ftp.ncbi.nlm.nih.gov/refseq/release/release-catalog/RefSeq-{release}.catalog.gz"
+# PathSeq expects taxdump in tar.gz file format - the archived taxdump files are in zip
 NCBI_TAX_DUMP_URL = "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz"
 
 # Directories
