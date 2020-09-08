@@ -2,8 +2,8 @@ from os.path import join
 
 # URLs
 # currently using release 97 - usure how to include this as part of the URL
-REFSEQ_CATALOG_URL = "ftp://ftp.ncbi.nlm.nih.gov/refseq/release/release-catalog/archive/release-catalog/RefSeq-{release}.catalog.gz"
-NCBI_TAX_DUMP_URL = "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump_archive/taxdmp_{date}.tar.gz"
+REFSEQ_CATALOG_URL = "ftp://ftp.ncbi.nlm.nih.gov/refseq/release/release-catalog/archive/RefSeq-{release}.catalog.gz"
+NCBI_TAX_DUMP_URL = "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump_archive/taxdmp_{date}.zip"
 
 # Directories
 RAW_DIR = "raw"
