@@ -5,11 +5,10 @@ from collections import defaultdict
 # load and iterate through the PathSeq BAM file
 pathseq_bam = pysam.AlignmentFile(snakemake.input[0], mode="rb")
 
-iter = pathseq_bam.fetch()
 output = []
 UMI_dict = defaultdict(list)
 # seg is an AlignedSegment object
-for seg in iter:
+for seg in pathseq_bam.fetch(until_eof=True):
     # not all records will have the CB tag and the UB tag - they should now
     if seg.has_tag("CB") and seg.has_tag("UB"):
         if (seg.get_tag(tag="CB") == snakemake.wildcards["cell"]):

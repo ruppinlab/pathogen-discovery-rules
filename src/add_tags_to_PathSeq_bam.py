@@ -9,11 +9,10 @@ cr_idx.build()
 # load and iterate through the PathSeq BAM file
 pathseq_bam = pysam.AlignmentFile(snakemake.input[1], mode="rb")
 
-iter = pathseq_bam.fetch()
 output = []
 # d = defaultdict(lambda: defaultdict(list))
 # seg is an AlignedSegment object
-for seg in iter:
+for seg in pathseq_bam.fetch(until_eof=True):
     # returns an IteratorRowSelection object, which contains one or more AlignedSegment object
     cr_list = list(cr_idx.find(seg.query_name))
     # we assume that all records belonging to the same query name will have the same CB/UB tag

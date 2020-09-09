@@ -102,16 +102,6 @@ rule FastqToBam:
         "SM={wildcards.patient}.{wildcards.sample} "
         "RG={wildcards.patient}.{wildcards.sample} "
 
-# index the PathSeq BAM so we can use with pysam
-rule index_PathSeq_BAM:
-    input:
-        PATHSEQ_BAM
-    output:
-        PATHSEQ_BAI
-    shell:
-        "module load samtools && "
-        "samtools index {input}"
-
 # add the CB and UMI tags from the CellRanger output BAM to the microbial annotations of the PathSeq output BAM
 rule add_CB_UB_tags_to_PathSeq_BAM:
     conda:
@@ -119,29 +109,17 @@ rule add_CB_UB_tags_to_PathSeq_BAM:
     input:
         CR_BAM_FILE,
         PATHSEQ_BAM,
-        PATHSEQ_BAI
     output:
         PATHSEQ_TAG_BAM,
     script:
         "../src/add_tags_to_PathSeq_bam.py"
-
-# index the PathSeq BAM with tags so we can use with pysam
-rule index_PathSeq_BAM_with_tags:
-    input:
-        PATHSEQ_TAG_BAM
-    output:
-        PATHSEQ_TAG_BAI
-    shell:
-        "module load samtools && "
-        "samtools index {input}"
 
 # split the PathSeq BAM into one BAM per cell barcode
 rule split_PathSeq_BAM_by_CB_UB:
     conda:
         "../envs/pysam.yaml"
     input:
-        PATHSEQ_TAG_BAM,
-        PATHSEQ_TAG_BAI
+        PATHSEQ_TAG_BAM
     output:
         PATHSEQ_CELL_BAM
     script:
