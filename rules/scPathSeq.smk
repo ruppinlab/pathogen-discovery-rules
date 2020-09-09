@@ -18,6 +18,7 @@ FASTP_HTML_REPORT = join("FASTQ", "unmapped", "trimmed", "{patient}-{sample}-rep
 UNALIGNED_BAM = join("output", "BAM", "{patient}-{sample}-unaligned.bam")
 
 PATHSEQ_BAM = join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam")
+PATHSEQ_BAI = join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam.bai")
 PATHSEQ_TAG_BAM = join("output", "PathSeq", "{patient}-{sample}", "pathseq_with_tags.bam")
 PATHSEQ_TAG_BAI = join("output", "PathSeq", "{patient}-{sample}", "pathseq_with_tags.bam.bai")
 PATHSEQ_CELL_BAM = join("output", "PathSeq", "{patient}-{sample}-{cell}", "pathseq_with_tags.bam")
@@ -101,19 +102,30 @@ rule FastqToBam:
         "SM={wildcards.patient}.{wildcards.sample} "
         "RG={wildcards.patient}.{wildcards.sample} "
 
+# index the PathSeq BAM so we can use with pysam
+rule index_PathSeq_BAM:
+    input:
+        PATHSEQ_BAM
+    output:
+        PATHSEQ_BAI
+    shell:
+        "module load samtools && "
+        "samtools index {input}"
+
 # add the CB and UMI tags from the CellRanger output BAM to the microbial annotations of the PathSeq output BAM
 rule add_CB_UB_tags_to_PathSeq_BAM:
     conda:
         "../envs/pysam.yaml"
     input:
         CR_BAM_FILE,
-        PATHSEQ_BAM
+        PATHSEQ_BAM,
+        PATHSEQ_BAI
     output:
         PATHSEQ_TAG_BAM,
     script:
         "../src/add_tags_to_PathSeq_bam.py"
 
-# index the PathSeq BAM so we can use with pysam
+# index the PathSeq BAM with tags so we can use with pysam
 rule index_PathSeq_BAM_with_tags:
     input:
         PATHSEQ_TAG_BAM
