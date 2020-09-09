@@ -139,4 +139,5 @@ rule PathSeqScoreSpark:
         "--taxonomy-file {input.taxonomy_db} "
         "--scores-output '{output.pathseq_output}' "
         '--java-options "-Xmx30g -Xms30G -XX:+UseG1GC -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2" '
+        "--conf spark.port.maxRetries=64 "
         '--spark-master local[2] ' + config["params"]["PathSeqScore"]
