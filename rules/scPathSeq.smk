@@ -88,6 +88,7 @@ rule run_fastp:
         "-i {input[0]} -o {output[0]} --failed_out {output[1]} "
         "-j {output[2]} -h {output[3]}"
 
+# convert filtered and trimmed FASTQ to BAM for PathSeq
 rule FastqToBam:
     input:
         TRIMMED_FQ1
@@ -100,37 +101,7 @@ rule FastqToBam:
         "SM={wildcards.patient}.{wildcards.sample} "
         "RG={wildcards.patient}.{wildcards.sample} "
 
-
-rule PathSeqScoreSpark:
-    input:
-        bam_file = PATHSEQ_CELL_BAM,
-        taxonomy_db = config["PathSeq"]["taxonomy_db"]
-    output:
-        pathseq_output = PATHSEQ_CELL_SCORE
-    run:
-        shell(
-            "module load GATK/4.1.6.0 && "
-            "gatk PathSeqScoreSpark "
-            "--unpaired-input '{input.bam_file}' "
-            "--taxonomy-file {input.taxonomy_db} "
-            "--scores-output '{output.pathseq_output}' "
-            '--java-options "-Xmx30g -Xms30G -XX:+UseG1GC -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2" '
-            '--spark-master local[2] ' + config["params"]["PathSeqScore"]
-        )
-
-
-
-rule split_PathSeq_BAM_by_CB_UB:
-    conda:
-        "../envs/pysam.yaml"
-    input:
-        PATHSEQ_TAG_BAM,
-        PATHSEQ_TAG_BAI
-    output:
-        PATHSEQ_CELL_BAM
-    script:
-        "../src/split_PathSeq_BAM_by_CB_UB.py"
-
+# add the CB and UMI tags from the CellRanger output BAM to the microbial annotations of the PathSeq output BAM
 rule add_CB_UB_tags_to_PathSeq_BAM:
     conda:
         "../envs/pysam.yaml"
@@ -142,6 +113,7 @@ rule add_CB_UB_tags_to_PathSeq_BAM:
     script:
         "../src/add_tags_to_PathSeq_bam.py"
 
+# index the PathSeq BAM so we can use with pysam
 rule index_PathSeq_BAM_with_tags:
     input:
         PATHSEQ_TAG_BAM
@@ -150,3 +122,31 @@ rule index_PathSeq_BAM_with_tags:
     shell:
         "module load samtools && "
         "samtools index {input}"
+
+# split the PathSeq BAM into one BAM per cell barcode
+rule split_PathSeq_BAM_by_CB_UB:
+    conda:
+        "../envs/pysam.yaml"
+    input:
+        PATHSEQ_TAG_BAM,
+        PATHSEQ_TAG_BAI
+    output:
+        PATHSEQ_CELL_BAM
+    script:
+        "../src/split_PathSeq_BAM_by_CB_UB.py"
+
+# score the cell barcode BAM file
+rule PathSeqScoreSpark:
+    input:
+        bam_file = PATHSEQ_CELL_BAM,
+        taxonomy_db = config["PathSeq"]["taxonomy_db"]
+    output:
+        pathseq_output = PATHSEQ_CELL_SCORE
+    shell:
+        "module load GATK/4.1.8.1 && "
+        "gatk PathSeqScoreSpark "
+        "--unpaired-input '{input.bam_file}' "
+        "--taxonomy-file {input.taxonomy_db} "
+        "--scores-output '{output.pathseq_output}' "
+        '--java-options "-Xmx30g -Xms30G -XX:+UseG1GC -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2" '
+        '--spark-master local[2] ' + config["params"]["PathSeqScore"]
