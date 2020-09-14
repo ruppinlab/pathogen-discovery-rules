@@ -32,8 +32,6 @@ STAR_PASS2_BAM_FILE = join(STAR_PASS2_OUTPUT_DIR, "Aligned.out.bam")
 STAR_PASS2_READCOUNT_FILE = join(STAR_PASS2_OUTPUT_DIR, "ReadsPerGene.out.tab")
 STAR_SE_PASS2_BAM_FILE = join(STAR_SE_PASS2_OUTPUT_DIR, "Aligned.out.bam")
 STAR_SE_PASS2_READCOUNT_FILE = join(STAR_SE_PASS2_OUTPUT_DIR, "ReadsPerGene.out.tab")
-HOST_READ_FILTERED_PE_BAM_FILE = join(STAR_SE_PASS2_OUTPUT_DIR, "host.reads.filtered.bam")
-HOST_READ_FILTERED_SE_BAM_FILE = join(STAR_PASS2_OUTPUT_DIR, "host.reads.filtered.bam")
 HOST_READ_FILTERED_BAM_FILE = join(STAR_OUTPUT_DIR, "host.reads.filtered.bam")
 STAR_BAM_FILE = join(STAR_OUTPUT_DIR, "Aligned.combined.bam")
 
@@ -48,16 +46,6 @@ def get_sjdbOverhang(file):
         data = json.load(json_file)
         return data["sjdbOverhang"]
 
-def get_fq(wildcards):
-    if config["trimming"]["skip"]:
-        # no trimming, use raw reads
-        dir = join("FASTQ", "raw")
-    else:
-        dir = join("FASTQ", "trimmed")
-    return {
-        'fq1': join(dir, "{wildcards.patient}-{wildcards.sample}_1.fastq.gz".format(wildcards=wildcards)),
-        'fq2': join(dir, "{wildcards.patient}-{wildcards.sample}_2.fastq.gz".format(wildcards=wildcards))
-        }
 
 rule combine_se_pe_aligned_reads:
     group:
@@ -75,17 +63,12 @@ rule filter_aligned_reads:
     group:
         "STAR_2pass"
     input:
-        STAR_PASS2_BAM_FILE,
-        STAR_SE_PASS2_BAM_FILE,
+        STAR_BAM_FILE,
     output:
-        HOST_READ_FILTERED_PE_BAM_FILE,
-        HOST_READ_FILTERED_SE_BAM_FILE,
         HOST_READ_FILTERED_BAM_FILE
     shell:
         "module load bamtools && "
-        "bamtools filter -tag 'uT:<=2' -in {input[0]} -out {output[0]} && "
-        "bamtools filter -tag 'uT:<=2' -in {input[1]} -out {output[1]} && "
-        "bamtools merge -in {output[0]} -in {output[1]} -out {output[2]}"
+        "bamtools filter -tag 'uT:<=2' -in {input[0]} -out {output[0]}"
 
 
 rule create_star_index:
