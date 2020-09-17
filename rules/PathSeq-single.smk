@@ -27,6 +27,9 @@ rule PathSeqPipelineSpark:
         shell(
             "module load GATK/4.1.8.1 && "
             "gatk PathSeqPipelineSpark "
+            "--skip-quality-filters true "
+            "--filter-duplicates false "
+            "--min-score-identity .7 "
             "--input '{input.bam_file}' "
             "--microbe-bwa-image /lscratch/$SLURM_JOBID/{params.microbe_bwa_image} "
             "--microbe-dict /lscratch/$SLURM_JOBID/{params.microbe_dict_file} "

@@ -34,6 +34,9 @@ rule PathSeqPipelineSpark:
             shell(
                 "module load GATK/4.1.8.1 && "
                 "gatk PathSeqPipelineSpark "
+                "--skip-quality-filters true "
+                "--filter-duplicates false "
+                "--min-score-identity .7 "
                 "--input '{bam_file}' "
                 "--filter-bwa-image /lscratch/$SLURM_JOBID/{params.host_bwa_image} "
                 "--kmer-file /lscratch/$SLURM_JOBID/{params.host_hss_file} "
