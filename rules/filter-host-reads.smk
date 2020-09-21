@@ -55,6 +55,8 @@ rule combine_se_pe_aligned_reads:
         STAR_SE_PASS2_BAM_FILE,
     output:
         STAR_BAM_FILE
+    benchmark:
+        "benchmarks/{patient}-{sample}.combine_se_pe_aligned_reads.benchmark.txt"
     shell:
         "module load bamtools && "
         "bamtools merge -in {input[0]} -in {input[1]} -out {output[0]}"
@@ -66,6 +68,8 @@ rule filter_aligned_reads:
         STAR_BAM_FILE,
     output:
         HOST_READ_FILTERED_BAM_FILE
+    benchmark:
+        "benchmarks/{patient}-{sample}.filter_aligned_reads.benchmark.txt"
     shell:
         "module load bamtools && "
         "bamtools filter -tag 'uT:<=2' -in {input[0]} -out {output[0]}"
@@ -98,6 +102,8 @@ rule compute_max_readlength:
         READLENGTH_HISTOGRAM,
     output:
         SAMPLE_METADATA
+    benchmark:
+        "benchmarks/{patient}-{sample}.compute_max_readlength.benchmark.txt"
     script:
         "../src/extract_max_readlength.py"
 
@@ -111,6 +117,8 @@ rule calculate_max_read_length:
         fq2 = FQ2_IN,
     output:
         READLENGTH_HISTOGRAM
+    benchmark:
+        "benchmarks/{patient}-{sample}.calculate_max_read_length.benchmark.txt"
     shell:
         "readlength.sh in='{input.fq1}' in2='{input.fq2}' bin=1 out='{output}'"
 
@@ -135,6 +143,8 @@ rule run_star_pe_pass1:
         sjdbOverhang = lambda wildcards, input: get_sjdbOverhang(input.metadata)
     threads:
         16
+    benchmark:
+        "benchmarks/{patient}-{sample}.run_star_pe_pass1.benchmark.txt"
     shell:
         "STAR "
         "--runThreadN {threads} "
@@ -166,6 +176,8 @@ rule run_star_filter_sj_pass1:
         STAR_PASS1_SJ_FILE
     output:
         STAR_PASS1_SJ_FILTERED_FILE
+    benchmark:
+        "benchmarks/{patient}-{sample}.run_star_filter_sj_pass1.benchmark.txt"
     shell:
         # $1~chromosomal and non-mitochondrial (regexp specific to GTF style!)
         # $5>0 canonical
@@ -194,6 +206,8 @@ rule run_star_pe_pass2:
         sjdbOverhang = lambda wildcards, input: get_sjdbOverhang(input.metadata)
     threads:
         16
+    benchmark:
+        "benchmarks/{patient}-{sample}.run_star_pe_pass2.benchmark.txt"
     shell:
         "STAR "
         "--runThreadN {threads} "
@@ -249,6 +263,8 @@ rule run_star_se_pass1:
         sjdbOverhang = lambda wildcards, input: get_sjdbOverhang(input.metadata)
     threads:
         16
+    benchmark:
+        "benchmarks/{patient}-{sample}.run_star_se_pass1.benchmark.txt"
     shell:
         "STAR "
         "--runThreadN {threads} "
@@ -280,6 +296,8 @@ rule run_star_filter_sj_se_pass1:
         STAR_SE_PASS1_SJ_FILE
     output:
         STAR_SE_PASS1_SJ_FILTERED_FILE
+    benchmark:
+        "benchmarks/{patient}-{sample}.run_star_filter_sj_se_pass1.benchmark.txt"
     shell:
         # $1~chromosomal and non-mitochondrial (regexp specific to GTF style!)
         # $5>0 canonical
@@ -307,6 +325,8 @@ rule run_star_se_pass2:
         sjdbOverhang = lambda wildcards, input: get_sjdbOverhang(input.metadata)
     threads:
         16
+    benchmark:
+        "benchmarks/{patient}-{sample}.run_star_se_pass2.benchmark.txt"
     shell:
         "STAR "
         "--runThreadN {threads} "
