@@ -23,6 +23,8 @@ rule PathSeqPipelineSpark:
         pathseq_output = join("output", "PathSeq", "{patient}-{sample}", "pathseq.txt"),
         filter_metrics = join("output", "PathSeq", "{patient}-{sample}", "filter-metrics.txt"),
         score_metrics = join("output", "PathSeq", "{patient}-{sample}", "score-metrics.txt"),
+    benchmark:
+        "benchmarks/{patient}-{sample}.PathSeqPipelineSpark_host_filter_single.txt"
     run:
         shell("mkdir /lscratch/$SLURM_JOBID/tmp")
         shell("cp {input.host_bwa_image} /lscratch/$SLURM_JOBID/")
