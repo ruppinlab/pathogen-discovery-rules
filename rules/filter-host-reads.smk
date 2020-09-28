@@ -43,7 +43,7 @@ rule filter_aligned_pe_reads:
     output:
         STAR_PE_UNALIGNED_BAM_FILE
     benchmark:
-        "benchmarks/{patient}-{sample}-{plate}.filter_aligned_reads.benchmark.txt"
+        "benchmarks/{patient}-{sample}-{plate}.filter_pe_aligned_reads.benchmark.txt"
     shell:
         "module load bamtools && "
         "bamtools filter -tag 'uT:<=2' -in {input[0]} -out {output[0]}"
@@ -56,7 +56,7 @@ rule filter_aligned_se_reads:
     output:
         STAR_SE_UNALIGNED_BAM_FILE
     benchmark:
-        "benchmarks/{patient}-{sample}-{plate}.filter_aligned_reads.benchmark.txt"
+        "benchmarks/{patient}-{sample}-{plate}.filter_se_aligned_reads.benchmark.txt"
     shell:
         "module load bamtools && "
         "bamtools filter -tag 'uT:<=2' -in {input[0]} -out {output[0]}"
