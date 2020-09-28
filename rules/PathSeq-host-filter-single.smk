@@ -19,12 +19,12 @@ rule PathSeqPipelineSpark:
         host_hss_file = basename(config["PathSeq"]["host_bfi"]),
         taxonomy_db = basename(config["PathSeq"]["taxonomy_db"])
     output:
-        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam"),
-        pathseq_output = join("output", "PathSeq", "{patient}-{sample}", "pathseq.txt"),
-        filter_metrics = join("output", "PathSeq", "{patient}-{sample}", "filter-metrics.txt"),
-        score_metrics = join("output", "PathSeq", "{patient}-{sample}", "score-metrics.txt"),
+        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.bam"),
+        pathseq_output = join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.txt"),
+        filter_metrics = join("output", "PathSeq", "{patient}-{sample}-{plate}", "filter-metrics.txt"),
+        score_metrics = join("output", "PathSeq", "{patient}-{sample}-{plate}", "score-metrics.txt"),
     benchmark:
-        "benchmarks/{patient}-{sample}.PathSeqPipelineSpark_host_filter_single.txt"
+        "benchmarks/{patient}-{sample}-{plate}.PathSeqPipelineSpark_host_filter_single.txt"
     run:
         shell("mkdir /lscratch/$SLURM_JOBID/tmp")
         shell("cp {input.host_bwa_image} /lscratch/$SLURM_JOBID/")
@@ -48,7 +48,7 @@ rule PathSeqPipelineSpark:
             "--scores-output '{output.pathseq_output}' "
             "--filter-metrics '{output.filter_metrics}' "
             "--score-metrics '{output.score_metrics}' "
-            '--java-options "-Xmx64g -Xms64G -Djava.io.tmpdir=/lscratch/$SLURM_JOBID/tmp -XX:+UseG1GC -XX:ParallelGCThreads=8 -XX:ConcGCThreads=2" '
+            '--java-options "-Xmx96g -Xms96G -Djava.io.tmpdir=/lscratch/$SLURM_JOBID/tmp -XX:+UseG1GC -XX:ParallelGCThreads=8 -XX:ConcGCThreads=2" '
             '--spark-master local[8] '
             + config["params"]["PathSeq"]
         )
