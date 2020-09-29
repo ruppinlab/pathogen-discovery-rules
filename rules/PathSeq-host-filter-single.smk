@@ -54,6 +54,8 @@ rule PathSeqPipelineSpark:
         )
 
 rule split_PathSeq_BAM_by_RG:
+    group:
+        "scPathSeq"
     input:
         pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.bam"),
     output:
@@ -63,6 +65,8 @@ rule split_PathSeq_BAM_by_RG:
         "samtools view -H -b -r {wildcards.cell} {input} > {output}"
 
 rule extract_paired_reads:
+    group:
+        "scPathSeq"
     input:
         pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.bam"),
     output:
@@ -72,6 +76,8 @@ rule extract_paired_reads:
         "samtools view -H -b -f 1 {input} > {output}"
 
 rule extract_unpaired_reads:
+    group:
+        "scPathSeq"
     input:
         pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.bam"),
     output:
@@ -81,6 +87,8 @@ rule extract_unpaired_reads:
         "samtools view -H -b -F 1 {input} > {output}"
 
 rule score_PathSeq_cell_BAM:
+    group:
+        "scPathSeq"
     input:
         paired_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.paired.bam"),
         unpaired_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.unpaired.bam"),
