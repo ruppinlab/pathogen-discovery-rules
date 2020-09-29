@@ -52,3 +52,49 @@ rule PathSeqPipelineSpark:
             '--spark-master local[8] '
             + config["params"]["PathSeq"]
         )
+
+rule split_PathSeq_BAM_by_RG:
+    input:
+        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.bam"),
+    output:
+        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.bam"),
+    shell:
+        "module load samtools && "
+        "samtools view -H -b -r {wildcards.cell} {input} > {output}"
+
+rule extract_paired_reads:
+    input:
+        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.bam"),
+    output:
+        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.paired.bam"),
+    shell:
+        "module load samtools && "
+        "samtools view -H -b -f 1 {input} > {output}"
+
+rule extract_unpaired_reads:
+    input:
+        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.bam"),
+    output:
+        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.unpaired.bam"),
+    shell:
+        "module load samtools && "
+        "samtools view -H -b -F 1 {input} > {output}"
+
+rule score_PathSeq_cell_BAM:
+    input:
+        paired_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.paired.bam"),
+        unpaired_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.unpaired.bam"),
+        taxonomy_db = config["PathSeq"]["taxonomy_db"]
+    output:
+        pathseq_output = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.txt"),
+    shell:
+        "module load GATK/4.1.8.1 && "
+        "gatk PathSeqScoreSpark "
+        "--min-score-identity .7 "
+        "--unpaired-input '{input.unpaired_bam}' "
+        "--paired-input '{input.paired_bam}' "
+        "--taxonomy-file {input.taxonomy_db} "
+        "--scores-output '{output.pathseq_output}' "
+        '--java-options "-Xmx5g -Xms5G -XX:+UseG1GC -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2" '
+        "--conf spark.port.maxRetries=64 "
+        '--spark-master local[2] ' + config["params"]["PathSeqScore"]
