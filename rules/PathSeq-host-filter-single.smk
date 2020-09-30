@@ -62,7 +62,7 @@ rule split_PathSeq_BAM_by_RG:
         pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.bam"),
     shell:
         "module load samtools && "
-        "samtools view -H -b -r {wildcards.cell} {input} > {output}"
+        "samtools view -h -b -r {wildcards.cell} {input} > {output}"
 
 rule extract_paired_reads:
     group:
@@ -73,7 +73,7 @@ rule extract_paired_reads:
         temp(join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.paired.bam")),
     shell:
         "module load samtools && "
-        "samtools view -H -b -f 1 {input} > {output}"
+        "samtools view -h -b -f 1 {input} > {output}"
 
 rule sort_paired_reads:
     group:
@@ -95,7 +95,7 @@ rule extract_unpaired_reads:
         temp(join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.unpaired.bam"))
     shell:
         "module load samtools && "
-        "samtools view -H -b -F 1 {input} > {output}"
+        "samtools view -h -b -F 1 {input} > {output}"
 
 rule sort_unpaired_reads:
     group:
