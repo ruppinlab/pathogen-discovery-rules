@@ -59,7 +59,7 @@ rule split_PathSeq_BAM_by_RG:
     input:
         pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.bam"),
     output:
-        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.bam"),
+        temp(join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.bam")),
     shell:
         "module load samtools && "
         "samtools view -h -b -r {wildcards.cell} {input} > {output}"
@@ -97,23 +97,12 @@ rule extract_unpaired_reads:
         "module load samtools && "
         "samtools view -h -b -F 1 {input} > {output}"
 
-rule sort_unpaired_reads:
-    group:
-        "scPathSeq"
-    input:
-        join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.unpaired.bam"),
-    output:
-        temp(join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.unpaired.sorted.bam")),
-    shell:
-        "module load samtools && "
-        "samtools sort -n -o {output} {input} "
-
 rule score_PathSeq_cell_BAM:
     group:
         "scPathSeq"
     input:
         paired_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.paired.sorted.bam"),
-        unpaired_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.unpaired.sorted.bam"),
+        unpaired_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.unpaired.bam"),
         taxonomy_db = config["PathSeq"]["taxonomy_db"]
     output:
         pathseq_output = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.txt"),

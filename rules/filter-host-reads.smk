@@ -54,7 +54,7 @@ rule filter_aligned_se_reads:
     input:
         STAR_SE_BAM_FILE,
     output:
-        STAR_SE_UNALIGNED_BAM_FILE
+        temp(STAR_SE_UNALIGNED_BAM_FILE)
     benchmark:
         "benchmarks/{patient}-{sample}-{plate}.filter_se_aligned_reads.benchmark.txt"
     shell:
