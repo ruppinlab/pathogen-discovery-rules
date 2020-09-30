@@ -68,30 +68,52 @@ rule extract_paired_reads:
     group:
         "scPathSeq"
     input:
-        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.bam"),
+        join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.bam"),
     output:
-        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.paired.bam"),
+        temp(join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.paired.bam")),
     shell:
         "module load samtools && "
         "samtools view -H -b -f 1 {input} > {output}"
+
+rule sort_paired_reads:
+    group:
+        "scPathSeq"
+    input:
+        join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.paired.bam"),
+    output:
+        temp(join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.paired.sorted.bam")),
+    shell:
+        "module load samtools && "
+        "samtools sort -n -o {output} {input} "
 
 rule extract_unpaired_reads:
     group:
         "scPathSeq"
     input:
-        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.bam"),
+        join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.bam"),
     output:
-        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.unpaired.bam"),
+        temp(join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.unpaired.bam"))
     shell:
         "module load samtools && "
         "samtools view -H -b -F 1 {input} > {output}"
+
+rule sort_unpaired_reads:
+    group:
+        "scPathSeq"
+    input:
+        join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.unpaired.bam"),
+    output:
+        temp(join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.unpaired.sorted.bam")),
+    shell:
+        "module load samtools && "
+        "samtools sort -n -o {output} {input} "
 
 rule score_PathSeq_cell_BAM:
     group:
         "scPathSeq"
     input:
-        paired_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.paired.bam"),
-        unpaired_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.unpaired.bam"),
+        paired_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.paired.sorted.bam"),
+        unpaired_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.unpaired.sorted.bam"),
         taxonomy_db = config["PathSeq"]["taxonomy_db"]
     output:
         pathseq_output = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.txt"),
