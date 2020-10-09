@@ -17,13 +17,13 @@ for seg in pathseq_bam.fetch(until_eof=True):
 
 barcode_bam = pysam.AlignmentFile(snakemake.output[0], mode="wb", template=pathseq_bam)
 for UMI in UMI_dict:
-    print(UMI)
+    #print(UMI)
     # keep one read per UMI - the read with the highest mapping quality
     UMI_reads = UMI_dict[UMI]
     UMI_read = UMI_reads[0]
-    print(UMI_read)
+    #print(UMI_read)
     for read in UMI_reads:
-        print(read)
+        #print(read)
         if read.mapping_quality > UMI_read.mapping_quality:
             UMI_read = read
     barcode_bam.write(UMI_read)
