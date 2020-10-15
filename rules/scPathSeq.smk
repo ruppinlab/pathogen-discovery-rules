@@ -185,7 +185,8 @@ rule PathSeqScoreSpark:
     run:
         n_alignments = next(shell("samtools view {input[bam_file]} | wc -l", iterable=True))
         if n_alignments == 0:
-            touch(pathseq_output)
+            cols = ["tax_id", "taxonomy", "type", "name", "kingdom", "score", "score_normalized", "reads", "unambiguous", "reference_length"]
+            pd.DataFrame(columns=cols).to_csv(output.pathseq_output, sep="\t", index=False)
         else:
             shell(
                 "module load GATK/4.1.8.1 && "
