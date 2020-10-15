@@ -182,13 +182,19 @@ rule PathSeqScoreSpark:
         taxonomy_db = config["PathSeq"]["taxonomy_db"]
     output:
         pathseq_output = PATHSEQ_CELL_SCORE
-    shell:
-        "module load GATK/4.1.8.1 && "
-        "gatk PathSeqScoreSpark "
-        "--min-score-identity .7 "
-        "--unpaired-input '{input.bam_file}' "
-        "--taxonomy-file {input.taxonomy_db} "
-        "--scores-output '{output.pathseq_output}' "
-        '--java-options "-Xmx5g -Xms5G -XX:+UseG1GC -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2" '
-        "--conf spark.port.maxRetries=64 "
-        '--spark-master local[2] ' + config["params"]["PathSeqScore"]
+    run:
+        n_alignments = next(shell("samtools view {input[bam_file]} | wc -l", iterable=True))
+        if n_alignments == 0:
+            touch(pathseq_output)
+        else:
+            shell(
+                "module load GATK/4.1.8.1 && "
+                "gatk PathSeqScoreSpark "
+                "--min-score-identity .7 "
+                "--unpaired-input '{input.bam_file}' "
+                "--taxonomy-file {input.taxonomy_db} "
+                "--scores-output '{output.pathseq_output}' "
+                '--java-options "-Xmx5g -Xms5G -XX:+UseG1GC -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2" '
+                "--conf spark.port.maxRetries=64 "
+                '--spark-master local[2] ' + config["params"]["PathSeqScore"]
+            )
