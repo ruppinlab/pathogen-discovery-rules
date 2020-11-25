@@ -1,0 +1,30 @@
+{
+  "__default__" :
+  {
+    "time" : "08:00:00",
+    "mem": "16g",
+    "nthreads" : 4,
+    "gres": 10,
+    "partition": "norm,ccr"
+  },
+  "build_host_RNA_SPIKE_BWA_image":
+  {
+    "mem": "80g",
+    "nthreads": 16
+  },
+  "build_host_ERCC_BWA_image":
+  {
+    "mem": "80g",
+    "nthreads": 16
+  },
+  "build_RNA_spike_host_kmer_file":
+  {
+    "mem": "80g",
+    "nthreads": 16
+  },
+  "build_ERCC_host_kmer_file":
+  {
+    "mem": "80g",
+    "nthreads": 16
+  },
+}
