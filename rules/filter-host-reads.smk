@@ -21,9 +21,9 @@ STAR_UNALIGNED_BAM_FILE = join(STAR_OUTPUT_DIR, "unaligned.bam")
 # localrules: compute_max_readlength, calculate_max_read_length, run_star_filter_sj_pass1, filter_aligned_reads, run_star_filter_sj_se_pass1
 
 
-rule combine_se_pe_unaligned_reads:
+rule combine_se_pe_nonhost_reads:
     group:
-        "STAR_2pass"
+        "filter_reads"
     input:
         STAR_PE_UNALIGNED_BAM_FILE,
         STAR_SE_UNALIGNED_BAM_FILE,
@@ -35,9 +35,10 @@ rule combine_se_pe_unaligned_reads:
         "module load bamtools && "
         "bamtools merge -in {input[0]} -in {input[1]} -out {output[0]}"
 
-rule filter_aligned_pe_reads:
+# it is much faster to filter aligned reads using samtools multi-thread
+rule filter_aligned_pe_reads_with_samtools:
     group:
-        "STAR_2pass"
+        "filter_reads"
     input:
         STAR_PE_BAM_FILE,
     output:
@@ -45,18 +46,18 @@ rule filter_aligned_pe_reads:
     benchmark:
         "benchmarks/{patient}-{sample}-{plate}.filter_pe_aligned_reads.benchmark.txt"
     shell:
-        "module load bamtools && "
-        "bamtools filter -tag 'uT:<=2' -in {input[0]} -out {output[0]}"
+        "module load samtools && "
+        "(samtools view -H {input}; samtools view -@ 8 -f 4 {input} | grep -w 'uT:A:[0-2]') | samtools view -@ 8 -bS - > {output}"
 
-rule filter_aligned_se_reads:
+rule filter_aligned_se_reads_with_samtools:
     group:
-        "STAR_2pass"
+        "filter_reads"
     input:
         STAR_SE_BAM_FILE,
     output:
-        temp(STAR_SE_UNALIGNED_BAM_FILE)
+        STAR_SE_UNALIGNED_BAM_FILE
     benchmark:
         "benchmarks/{patient}-{sample}-{plate}.filter_se_aligned_reads.benchmark.txt"
     shell:
-        "module load bamtools && "
-        "bamtools filter -tag 'uT:<=2' -in {input[0]} -out {output[0]}"
+        "module load samtools && "
+        "(samtools view -H {input}; samtools view -@ 8 -f 4 {input} | grep -w 'uT:A:[0-2]') | samtools view -@ 8 -bS - > {output}"
