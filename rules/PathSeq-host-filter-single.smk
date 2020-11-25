@@ -105,14 +105,46 @@ rule score_PathSeq_cell_BAM:
         taxonomy_db = config["PathSeq"]["taxonomy_db"]
     output:
         pathseq_output = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.txt"),
-    shell:
-        "module load GATK/4.1.8.1 && "
-        "gatk PathSeqScoreSpark "
-        "--min-score-identity .7 "
-        "--unpaired-input '{input.unpaired_bam}' "
-        "--paired-input '{input.paired_bam}' "
-        "--taxonomy-file {input.taxonomy_db} "
-        "--scores-output '{output.pathseq_output}' "
-        '--java-options "-Xmx5g -Xms5G -XX:+UseG1GC -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2" '
-        "--conf spark.port.maxRetries=64 "
-        '--spark-master local[2] ' + config["params"]["PathSeqScore"]
+    run:
+        n_paired_alignments = int(next(shell("samtools view {input[paired_bam]} | wc -l", iterable=True)))
+        n_unpaired_alignments = int(next(shell("samtools view {input[unpaired_bam]} | wc -l", iterable=True)))
+        if (n_paired_alignments == 0) and (n_unpaired_alignments == 0):
+            cols = ["tax_id", "taxonomy", "type", "name", "kingdom", "score", "score_normalized", "reads", "unambiguous", "reference_length"]
+            pd.DataFrame(columns=cols).to_csv(output.pathseq_output, sep="\t", index=False)
+        elif n_paired_alignments == 0:
+            shell(
+                "module load GATK/4.1.8.1 && "
+                "gatk PathSeqScoreSpark "
+                "--min-score-identity .7 "
+                "--unpaired-input '{input.unpaired_bam}' "
+                "--taxonomy-file {input.taxonomy_db} "
+                "--scores-output '{output.pathseq_output}' "
+                '--java-options "-Xmx5g -Xms5G -XX:+UseG1GC -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2" '
+                "--conf spark.port.maxRetries=64 "
+                '--spark-master local[2] ' + config["params"]["PathSeqScore"]
+            )
+        elif n_unpaired_alignments == 0:
+            shell(
+                "module load GATK/4.1.8.1 && "
+                "gatk PathSeqScoreSpark "
+                "--min-score-identity .7 "
+                "--paired-input '{input.paired_bam}' "
+                "--taxonomy-file {input.taxonomy_db} "
+                "--scores-output '{output.pathseq_output}' "
+                '--java-options "-Xmx5g -Xms5G -XX:+UseG1GC -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2" '
+                "--conf spark.port.maxRetries=64 "
+                '--spark-master local[2] ' + config["params"]["PathSeqScore"]
+            )
+        else:
+            shell(
+                "module load GATK/4.1.8.1 && "
+                "gatk PathSeqScoreSpark "
+                "--min-score-identity .7 "
+                "--unpaired-input '{input.unpaired_bam}' "
+                "--paired-input '{input.paired_bam}' "
+                "--taxonomy-file {input.taxonomy_db} "
+                "--scores-output '{output.pathseq_output}' "
+                '--java-options "-Xmx5g -Xms5G -XX:+UseG1GC -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2" '
+                "--conf spark.port.maxRetries=64 "
+                '--spark-master local[2] ' + config["params"]["PathSeqScore"]
+            )
