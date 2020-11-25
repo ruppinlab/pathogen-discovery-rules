@@ -8,6 +8,9 @@ HUMAN_RNA_SPIKE_FA = "/data/Robinson-SB/PathSeq-data/pathseq_host_RNA_spike.fa"
 # bloom filters
 HUMAN_ERCC_BFI = "/data/Robinson-SB/PathSeq-data/pathseq_host_ERCC92.bfi"
 HUMAN_RNA_SPIKE_BFI = "/data/Robinson-SB/PathSeq-data/pathseq_host_RNA_spike.bfi"
+# BWA indices
+HUMAN_RNA_SPIKE_IMG = "/data/Robinson-SB/PathSeq-data/pathseq_host_RNA_spike.img"
+HUMAN_ERCC_IMG = "/data/Robinson-SB/PathSeq-data/pathseq_host_ERCC92.img"
 # dictionaries
 HUMAN_ERCC_DICT = "/data/Robinson-SB/PathSeq-data/pathseq_host_ERCC92.dict"
 HUMAN_RNA_SPIKE_DICT = "/data/Robinson-SB/PathSeq-data/pathseq_host_RNA_spike.dict"
@@ -23,6 +26,8 @@ rule all:
     input:
         HUMAN_ERCC_BFI,
         HUMAN_RNA_SPIKE_BFI,
+        HUMAN_ERCC_IMG,
+        HUMAN_RNA_SPIKE_IMG,
         HUMAN_ERCC_DICT,
         HUMAN_RNA_SPIKE_DICT,
         HUMAN_ERCC_FAI,
