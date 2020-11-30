@@ -54,8 +54,6 @@ rule PathSeqPipelineSpark:
 
 # -v means to only report those entries in A that have no overlap in B
 rule identify_reads_with_vector_contamination:
-    group:
-        "scPathSeq"
     input:
         join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.bam"),
         "/data/Robinson-SB/run-VecScreen/output/microbev1-vecscreen-combined-matches.bed"
@@ -83,7 +81,7 @@ rule filter_vector_contaminant_reads:
     shell:
         "module load picard && "
         "java -jar $PICARDJARPATH/picard.jar FilterSamReads "
-        "I={input[0]} O={output} READ_LIST_FILE={input[1]}"
+        "I={input[0]} O={output} READ_LIST_FILE={input[1]} "
         "FILTER=excludeReadList"
 
 rule split_PathSeq_BAM_by_RG:
