@@ -65,6 +65,27 @@ rule identify_reads_with_vector_contamination:
         "module load bedtools && "
         "bedtools intersect -abam {input[0]} -b {input[1]} > {output[0]}"
 
+rule get_query_names_for_vector_contaminants:
+    input:
+        join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.contaminants.bam")
+    output:
+        join("output", "PathSeq", "{patient}-{sample}-{plate}", "contaminants.qname.txt")
+    shell:
+        "module load samtools && "
+        "samtools view {input} | cut -f 1 > {output}"
+
+rule filter_vector_contaminant_reads:
+    input:
+        join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.bam"),
+        join("output", "PathSeq", "{patient}-{sample}-{plate}", "contaminants.qname.txt")
+    output:
+        join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.filtered.bam")
+    shell:
+        "module load picard && "
+        "java -jar $PICARDJARPATH/picard.jar FilterSamReads "
+        "I={input[0]} O={output} READ_LIST_FILE={input[1]}"
+        "FILTER=excludeReadList"
+
 rule split_PathSeq_BAM_by_RG:
     group:
         "scPathSeq"
