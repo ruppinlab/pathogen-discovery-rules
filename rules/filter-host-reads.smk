@@ -22,8 +22,6 @@ STAR_UNALIGNED_BAM_FILE = join(STAR_OUTPUT_DIR, "unaligned.bam")
 
 
 rule combine_se_pe_nonhost_reads:
-    group:
-        "filter_reads"
     input:
         STAR_PE_UNALIGNED_BAM_FILE,
         STAR_SE_UNALIGNED_BAM_FILE,
@@ -37,8 +35,6 @@ rule combine_se_pe_nonhost_reads:
 
 # it is much faster to filter aligned reads using samtools multi-thread
 rule filter_aligned_pe_reads_with_samtools:
-    group:
-        "filter_reads"
     input:
         STAR_PE_BAM_FILE,
     output:
@@ -50,8 +46,6 @@ rule filter_aligned_pe_reads_with_samtools:
         "(samtools view -H {input}; samtools view -@ 8 -f 4 {input} | grep -w 'uT:A:[0-2]') | samtools view -@ 8 -bS - > {output}"
 
 rule filter_aligned_se_reads_with_samtools:
-    group:
-        "filter_reads"
     input:
         STAR_SE_BAM_FILE,
     output:
