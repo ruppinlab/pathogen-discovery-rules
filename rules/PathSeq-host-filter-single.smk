@@ -62,6 +62,7 @@ rule filter_vector_contamination_reads:
     output:
         temp(join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.filtered.bam")),
     shell:
+        "module load bedtools && "
         "bedtools intersect -abam {input[0]} -b {input[1]} -v > {output[0]}"
 
 rule split_PathSeq_BAM_by_RG:
