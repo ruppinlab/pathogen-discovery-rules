@@ -52,11 +52,23 @@ rule PathSeqPipelineSpark:
             + config["params"]["PathSeq"]
         )
 
+# -v means to only report those entries in A that have no overlap in B
+rule filter_vector_contamination_reads:
+    group:
+        "scPathSeq"
+    input:
+        join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.bam"),
+        "/data/Robinson-SB/run-VecScreen/output/microbev1-vecscreen-combined-matches.bed"
+    output:
+        temp(join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.filtered.bam")),
+    shell:
+        "bedtools intersect -abam {input[0]} -b {input[1]} -v > {output[0]}"
+
 rule split_PathSeq_BAM_by_RG:
     group:
         "scPathSeq"
     input:
-        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.bam"),
+        pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.filtered.bam"),
     output:
         temp(join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.bam")),
     shell:
@@ -116,4 +128,3 @@ rule score_PathSeq_cell_BAM:
         '--java-options "-Xmx5g -Xms5G -XX:+UseG1GC -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2" '
         "--conf spark.port.maxRetries=64 "
         '--spark-master local[2] ' + config["params"]["PathSeqScore"]
-        
