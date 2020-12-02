@@ -96,7 +96,7 @@ rule split_PathSeq_BAM_by_RG:
     input:
         pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.filtered.bam"),
     output:
-        temp(join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.bam")),
+        join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.bam"),
     shell:
         "module load samtools && "
         "samtools view -h -b -r {wildcards.cell} {input} > {output}"
