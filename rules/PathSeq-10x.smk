@@ -18,6 +18,7 @@ FASTP_HTML_REPORT = join("FASTQ", "unmapped", "trimmed", "{patient}-{sample}-rep
 UNALIGNED_BAM = join("output", "BAM", "{patient}-{sample}-unaligned.bam")
 
 PATHSEQ_BAM = join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam")
+PATHSEQ_FILTERED_BAM = join("output", "PathSeq", "{patient}-{sample}", "pathseq.filtered.bam")
 PATHSEQ_BAI = join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam.bai")
 PATHSEQ_TAG_BAM = join("output", "PathSeq", "{patient}-{sample}", "pathseq_with_tags.bam")
 PATHSEQ_TAG_BAI = join("output", "PathSeq", "{patient}-{sample}", "pathseq_with_tags.bam.bai")
@@ -155,6 +156,44 @@ rule PathSeqPipelineSpark:
             + config["params"]["PathSeq"]
         )
 
+# -v means to only report those entries in A that have no overlap in B
+rule identify_reads_with_vector_contamination:
+    group:
+        "scPathSeq"
+    input:
+        join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam"),
+        "/data/Robinson-SB/run-VecScreen/output/microbev1-vecscreen-combined-matches.bed"
+    output:
+        temp(join("output", "PathSeq", "{patient}-{sample}", "pathseq.contaminants.bam")),
+    shell:
+        "module load bedtools && "
+        "bedtools intersect -abam {input[0]} -b {input[1]} > {output[0]}"
+
+rule get_query_names_for_vector_contaminants:
+    group:
+        "scPathSeq"
+    input:
+        join("output", "PathSeq", "{patient}-{sample}", "pathseq.contaminants.bam")
+    output:
+        join("output", "PathSeq", "{patient}-{sample}", "contaminants.qname.txt")
+    shell:
+        "module load samtools && "
+        "samtools view {input} | cut -f 1 > {output}"
+
+rule filter_vector_contaminant_reads:
+    group:
+        "scPathSeq"
+    input:
+        join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam"),
+        join("output", "PathSeq", "{patient}-{sample}", "contaminants.qname.txt")
+    output:
+        PATHSEQ_FILTERED_BAM
+    shell:
+        "module load picard && "
+        "java -jar $PICARDJARPATH/picard.jar FilterSamReads "
+        "I={input[0]} O={output} READ_LIST_FILE={input[1]} "
+        "FILTER=excludeReadList"
+
 
 # add the CB and UMI tags from the CellRanger output BAM to the microbial annotations of the PathSeq output BAM
 rule add_CB_UB_tags_to_PathSeq_BAM:
@@ -162,7 +201,7 @@ rule add_CB_UB_tags_to_PathSeq_BAM:
         "../envs/pysam.yaml"
     input:
         CR_BAM_FILE,
-        PATHSEQ_BAM,
+        PATHSEQ_FILTERED_BAM,
     output:
         PATHSEQ_TAG_BAM,
     script:
