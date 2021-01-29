@@ -1,9 +1,12 @@
 import pysam
 from collections import defaultdict
 
-
+# suppress incorrect error warning - https://github.com/pysam-developers/pysam/issues/939
+save = pysam.set_verbosity(0)
 # load and iterate through the PathSeq BAM file
 pathseq_bam = pysam.AlignmentFile(snakemake.input[0], mode="rb")
+# set verbosity back to original setting
+pysam.set_verbosity(save)
 
 output = []
 UMI_dict = defaultdict(list)
