@@ -193,7 +193,7 @@ rule filter_vector_contaminant_reads:
     run:
         n_alignments = int(next(shell("cat {input[1]} | wc -l", iterable=True)))
         if n_alignments == 0:
-            shell("cp {input[0]} {input[1]}")
+            shell("cp {input[0]} {output[0]}")
         else:
             shell(
                 "module load picard && "
