@@ -180,6 +180,8 @@ rule get_query_names_for_vector_contaminants:
         "module load samtools && "
         "samtools view {input} | cut -f 1 > {output}"
 
+# Picard throws an error when contaminants.qname.txt is empty so we need to check this
+# I think iterable=True forces the return of the value
 rule filter_vector_contaminant_reads:
     group:
         "scPathSeq"
@@ -188,11 +190,17 @@ rule filter_vector_contaminant_reads:
         join("output", "PathSeq", "{patient}-{sample}", "contaminants.qname.txt")
     output:
         PATHSEQ_FILTERED_BAM
-    shell:
-        "module load picard && "
-        "java -jar $PICARDJARPATH/picard.jar FilterSamReads "
-        "I={input[0]} O={output} READ_LIST_FILE={input[1]} "
-        "FILTER=excludeReadList"
+    run:
+        n_alignments = int(next(shell("cat {input[1]} | wc -l", iterable=True)))
+        if n_alignments == 0:
+            shell("cp {input[0]} {input[1]}")
+        else:
+            shell(
+                "module load picard && "
+                "java -jar $PICARDJARPATH/picard.jar FilterSamReads "
+                "I={input[0]} O={output} READ_LIST_FILE={input[1]} "
+                "FILTER=excludeReadList"
+            )
 
 
 # add the CB and UMI tags from the CellRanger output BAM to the microbial annotations of the PathSeq output BAM
