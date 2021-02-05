@@ -67,7 +67,7 @@ rule convert_to_fastq:
     output:
         UNMAPPED_FQ1
     shell:
-        "module load bedtools && "
+        "module load bedtools/2.29.2 && "
         "bamToFastq -i {input} -fq {output[0]}"
 
 rule run_fastp:
@@ -166,7 +166,7 @@ rule identify_reads_with_vector_contamination:
     output:
         temp(join("output", "PathSeq", "{patient}-{sample}", "pathseq.contaminants.bam")),
     shell:
-        "module load bedtools && "
+        "module load bedtools/2.29.2 && "
         "bedtools intersect -abam {input[0]} -b {input[1]} > {output[0]}"
 
 rule get_query_names_for_vector_contaminants:
