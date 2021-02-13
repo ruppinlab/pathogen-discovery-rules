@@ -4,5 +4,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - pysam
-
+  - pysam=1.16.0

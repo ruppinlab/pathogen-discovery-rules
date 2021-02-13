@@ -37,7 +37,7 @@ rule filter_aligned_reads:
         CR_UNMAPPED_BAM_FILE,
         CR_UNMAPPED_BAI_FILE
     shell:
-        "module load samtools && "
+        "module load samtools/1.11 && "
         "samtools view -h -b -f 4 {input} > {output[0]} && "
         "samtools index {output[0]}"
 
@@ -58,7 +58,7 @@ rule sort_by_query_name:
     output:
         CR_UNMAPPED_TRIMMED_QNAME_SORTED_BAM
     shell:
-        "module load samtools && "
+        "module load samtools/1.11 && "
         "samtools sort -n -o {output} {input}"
 
 rule convert_to_fastq:
@@ -99,7 +99,7 @@ rule FastqToBam:
     output:
         UNALIGNED_BAM
     shell:
-        "module load picard && "
+        "module load picard/2.25.0 && "
         "java -jar $PICARDJARPATH/picard.jar FastqToSam "
         "F1={input} O={output} "
         "SM={wildcards.patient}.{wildcards.sample} "
@@ -177,7 +177,7 @@ rule get_query_names_for_vector_contaminants:
     output:
         join("output", "PathSeq", "{patient}-{sample}", "contaminants.qname.txt")
     shell:
-        "module load samtools && "
+        "module load samtools/1.11 && "
         "samtools view {input} | cut -f 1 > {output}"
 
 # Picard throws an error when contaminants.qname.txt is empty so we need to check this
@@ -196,7 +196,7 @@ rule filter_vector_contaminant_reads:
             shell("cp {input[0]} {output[0]}")
         else:
             shell(
-                "module load picard && "
+                "module load picard/2.25.0 && "
                 "java -jar $PICARDJARPATH/picard.jar FilterSamReads "
                 "I={input[0]} O={output} READ_LIST_FILE={input[1]} "
                 "FILTER=excludeReadList"
@@ -234,7 +234,7 @@ rule PathSeqScoreSpark:
     output:
         pathseq_output = PATHSEQ_CELL_SCORE
     run:
-        n_alignments = int(next(shell("module load samtools && samtools view {input[bam_file]} | wc -l", iterable=True)))
+        n_alignments = int(next(shell("module load samtools/1.11 && samtools view {input[bam_file]} | wc -l", iterable=True)))
         if n_alignments == 0:
             cols = ["tax_id", "taxonomy", "type", "name", "kingdom", "score", "score_normalized", "reads", "unambiguous", "reference_length"]
             pd.DataFrame(columns=cols).to_csv(output.pathseq_output, sep="\t", index=False)
