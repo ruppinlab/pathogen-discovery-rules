@@ -157,12 +157,13 @@ rule PathSeqPipelineSpark:
         )
 
 # -v means to only report those entries in A that have no overlap in B
+# "/data/Robinson-SB/run-VecScreen/output/microbev1-vecscreen-combined-matches.bed"
 rule identify_reads_with_vector_contamination:
     group:
         "scPathSeq"
     input:
         join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam"),
-        "/data/Robinson-SB/run-VecScreen/output/microbev1-vecscreen-combined-matches.bed"
+        config["VecScreen"]["contaminant_hits"]
     output:
         temp(join("output", "PathSeq", "{patient}-{sample}", "pathseq.contaminants.bam")),
     shell:

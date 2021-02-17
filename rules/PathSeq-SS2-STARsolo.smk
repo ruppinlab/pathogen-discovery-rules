@@ -58,7 +58,7 @@ rule identify_reads_with_vector_contamination:
         "scPathSeq"
     input:
         join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.bam"),
-        "/data/Robinson-SB/run-VecScreen/output/microbev1-vecscreen-combined-matches.bed"
+        config["VecScreen"]["contaminant_hits"]
     output:
         temp(join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.contaminants.bam")),
     shell:
