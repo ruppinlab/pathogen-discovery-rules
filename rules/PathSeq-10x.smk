@@ -25,8 +25,8 @@ PATHSEQ_TAG_BAI = join("output", "PathSeq", "{patient}-{sample}", "pathseq_with_
 PATHSEQ_CELL_BAM = join("output", "PathSeq", "{patient}-{sample}-{cell}", "pathseq_with_tags.bam")
 PATHSEQ_CELL_SCORE = join("output", "PathSeq", "{patient}-{sample}-{cell}", "pathseq.txt")
 
-localrules: PathSeqScoreSpark, split_PathSeq_BAM_by_CB_UB, filter_aligned_reads, trim_reads, sort_by_query_name, convert_to_fastq, run_fastp, FastqToBam
-
+localrules: filter_aligned_reads, trim_reads, sort_by_query_name, convert_to_fastq, run_fastp, FastqToBam
+localrules: filter_vector_contaminant_reads, get_query_names_for_vector_contaminants, identify_reads_with_vector_contamination
 
 ### rules for cleaning CellRanger output to prepare for running PathSeq ###
 
@@ -159,8 +159,6 @@ rule PathSeqPipelineSpark:
 # -v means to only report those entries in A that have no overlap in B
 # "/data/Robinson-SB/run-VecScreen/output/microbev1-vecscreen-combined-matches.bed"
 rule identify_reads_with_vector_contamination:
-    group:
-        "scPathSeq"
     input:
         join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam"),
         config["VecScreen"]["contaminant_hits"]
@@ -171,8 +169,6 @@ rule identify_reads_with_vector_contamination:
         "bedtools intersect -abam {input[0]} -b {input[1]} > {output[0]}"
 
 rule get_query_names_for_vector_contaminants:
-    group:
-        "scPathSeq"
     input:
         join("output", "PathSeq", "{patient}-{sample}", "pathseq.contaminants.bam")
     output:
@@ -184,8 +180,6 @@ rule get_query_names_for_vector_contaminants:
 # Picard throws an error when contaminants.qname.txt is empty so we need to check this
 # I think iterable=True forces the return of the value
 rule filter_vector_contaminant_reads:
-    group:
-        "scPathSeq"
     input:
         join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam"),
         join("output", "PathSeq", "{patient}-{sample}", "contaminants.qname.txt")
@@ -206,6 +200,8 @@ rule filter_vector_contaminant_reads:
 
 # add the CB and UMI tags from the CellRanger output BAM to the microbial annotations of the PathSeq output BAM
 rule add_CB_UB_tags_to_PathSeq_BAM:
+    group:
+        "scPathSeq"
     conda:
         "../envs/pysam.yaml"
     input:
@@ -218,6 +214,8 @@ rule add_CB_UB_tags_to_PathSeq_BAM:
 
 # split the PathSeq BAM into one BAM per cell barcode
 rule split_PathSeq_BAM_by_CB_UB:
+    group:
+        "scPathSeq"
     conda:
         "../envs/pysam.yaml"
     input:
@@ -229,6 +227,8 @@ rule split_PathSeq_BAM_by_CB_UB:
 
 # score the cell barcode BAM file
 rule PathSeqScoreSpark:
+    group:
+        "scPathSeq"
     input:
         bam_file = PATHSEQ_CELL_BAM,
         taxonomy_db = config["PathSeq"]["taxonomy_db"]
@@ -248,6 +248,6 @@ rule PathSeqScoreSpark:
                 "--taxonomy-file {input.taxonomy_db} "
                 "--scores-output '{output.pathseq_output}' "
                 '--java-options "-Xmx5g -Xms5G -XX:+UseG1GC -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2" '
-                "--conf spark.port.maxRetries=64 "
+                "--conf spark.port.maxRetries=128 "
                 '--spark-master local[2] ' + config["params"]["PathSeqScore"]
             )
