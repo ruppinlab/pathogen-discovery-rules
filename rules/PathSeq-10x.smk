@@ -25,7 +25,7 @@ PATHSEQ_TAG_BAI = join("output", "PathSeq", "{patient}-{sample}", "pathseq_with_
 PATHSEQ_CELL_BAM = join("output", "PathSeq", "{patient}-{sample}-{cell}", "pathseq_with_tags.bam")
 PATHSEQ_CELL_SCORE = join("output", "PathSeq", "{patient}-{sample}-{cell}", "pathseq.txt")
 
-localrules: filter_aligned_reads, trim_reads, sort_by_query_name, convert_to_fastq, run_fastp, FastqToBam
+localrules: filter_aligned_reads, trim_reads, sort_by_query_name, convert_to_fastq, FastqToBam
 localrules: filter_vector_contaminant_reads, get_query_names_for_vector_contaminants, identify_reads_with_vector_contamination
 
 ### rules for cleaning CellRanger output to prepare for running PathSeq ###
@@ -107,7 +107,6 @@ rule FastqToBam:
 
 
 ### rules to run PathSeq and get per-cell microbial read abundances ###
-
 rule PathSeqPipelineSpark:
     input:
         bam_file = config["PathSeq"]["bam_file"],
@@ -200,8 +199,6 @@ rule filter_vector_contaminant_reads:
 
 # add the CB and UMI tags from the CellRanger output BAM to the microbial annotations of the PathSeq output BAM
 rule add_CB_UB_tags_to_PathSeq_BAM:
-    group:
-        "scPathSeq"
     conda:
         "../envs/pysam.yaml"
     input:
@@ -215,7 +212,7 @@ rule add_CB_UB_tags_to_PathSeq_BAM:
 # split the PathSeq BAM into one BAM per cell barcode
 rule split_PathSeq_BAM_by_CB_UB:
     group:
-        "scPathSeq"
+        "split_PathSeq_BAM_by_CB_UB"
     conda:
         "../envs/pysam.yaml"
     input:
@@ -228,7 +225,7 @@ rule split_PathSeq_BAM_by_CB_UB:
 # score the cell barcode BAM file
 rule PathSeqScoreSpark:
     group:
-        "scPathSeq"
+        "PathSeqScoreSpark"
     input:
         bam_file = PATHSEQ_CELL_BAM,
         taxonomy_db = config["PathSeq"]["taxonomy_db"]
