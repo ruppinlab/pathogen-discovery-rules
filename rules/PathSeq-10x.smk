@@ -25,8 +25,7 @@ PATHSEQ_TAG_BAI = join("output", "PathSeq", "{patient}-{sample}", "pathseq_with_
 PATHSEQ_CELL_BAM = join("output", "PathSeq", "{patient}-{sample}-{cell}", "pathseq_with_tags.bam")
 PATHSEQ_CELL_SCORE = join("output", "PathSeq", "{patient}-{sample}-{cell}", "pathseq.txt")
 
-localrules: filter_aligned_reads, trim_reads, sort_by_query_name, convert_to_fastq, FastqToBam
-localrules: filter_vector_contaminant_reads, get_query_names_for_vector_contaminants, identify_reads_with_vector_contamination
+localrules: filter_aligned_reads, FastqToBam, filter_vector_contaminant_reads, get_query_names_for_vector_contaminants, identify_reads_with_vector_contamination
 
 ### rules for cleaning CellRanger output to prepare for running PathSeq ###
 
