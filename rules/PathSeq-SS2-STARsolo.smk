@@ -54,8 +54,6 @@ rule PathSeqPipelineSpark:
 
 # -v means to only report those entries in A that have no overlap in B
 rule identify_reads_with_vector_contamination:
-    group:
-        "scPathSeq"
     input:
         join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.bam"),
         config["VecScreen"]["contaminant_hits"]
@@ -66,8 +64,6 @@ rule identify_reads_with_vector_contamination:
         "bedtools intersect -abam {input[0]} -b {input[1]} > {output[0]}"
 
 rule get_query_names_for_vector_contaminants:
-    group:
-        "scPathSeq"
     input:
         join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.contaminants.bam")
     output:
@@ -77,8 +73,6 @@ rule get_query_names_for_vector_contaminants:
         "samtools view {input} | cut -f 1 > {output}"
 
 rule filter_vector_contaminant_reads:
-    group:
-        "scPathSeq"
     input:
         join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.bam"),
         join("output", "PathSeq", "{patient}-{sample}-{plate}", "contaminants.qname.txt")
@@ -92,7 +86,7 @@ rule filter_vector_contaminant_reads:
 
 rule split_PathSeq_BAM_by_RG:
     group:
-        "scPathSeq"
+        "split_PathSeq_BAM_by_RG"
     input:
         pathseq_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}", "pathseq.filtered.bam"),
     output:
@@ -103,7 +97,7 @@ rule split_PathSeq_BAM_by_RG:
 
 rule extract_paired_reads:
     group:
-        "scPathSeq"
+        "extract_paired_reads"
     input:
         join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.bam"),
     output:
@@ -114,7 +108,7 @@ rule extract_paired_reads:
 
 rule sort_paired_reads:
     group:
-        "scPathSeq"
+        "sort_paired_reads"
     input:
         join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.paired.bam"),
     output:
@@ -125,7 +119,7 @@ rule sort_paired_reads:
 
 rule extract_unpaired_reads:
     group:
-        "scPathSeq"
+        "extract_unpaired_reads"
     input:
         join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.bam"),
     output:
@@ -136,7 +130,7 @@ rule extract_unpaired_reads:
 
 rule score_PathSeq_cell_BAM:
     group:
-        "scPathSeq"
+        "score_PathSeq_cell_BAM"
     input:
         paired_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.paired.sorted.bam"),
         unpaired_bam = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.unpaired.bam"),
