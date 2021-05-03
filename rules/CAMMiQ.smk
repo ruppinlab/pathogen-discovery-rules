@@ -30,7 +30,7 @@ rule run_CAMMiQ_species_long_reads:
         GENOME_MAP,
         CAMMIQ_INDEX_BIN1,
         CAMMIQ_INDEX_BIN2,
-        CAMMIQ_FASTQ_DIR
+        CAMMIQ_FASTQ_DIR + "/"
     output:
         CAMMIQ_COUNT_FILE
     shell:
