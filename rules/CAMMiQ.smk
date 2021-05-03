@@ -9,8 +9,8 @@ CAMMIQ_COUNT_FILE = join("output", "CAMMiQ", "read_cnts_{tax_level}.txt")
 
 PathSeq_Cell_BAM = join("output", "PathSeq", "{patient}-{sample}-{plate}-{cell}", "pathseq.bam")
 CAMMIQ_FASTQ_DIR = join("output", "CAMMiQ", "fastq_dir")
-PathSeq_FQ1 = join(CAMMIQ_FASTQ_DIR, "{patient}-{sample}-{plate}-{cell}.fq1")
-PathSeq_FQ2 = join(CAMMIQ_FASTQ_DIR, "{patient}-{sample}-{plate}-{cell}.fq2")
+PathSeq_FQ1 = join(CAMMIQ_FASTQ_DIR, "{patient}-{sample}-{plate}-{cell}_1.fq")
+PathSeq_FQ2 = join(CAMMIQ_FASTQ_DIR, "{patient}-{sample}-{plate}-{cell}_2.fq")
 
 rule convert_BAMs_to_fastq_dir:
     input:
@@ -34,12 +34,12 @@ rule run_CAMMiQ_species_long_reads:
     output:
         CAMMIQ_COUNT_FILE
     shell:
-        "set -e "
-        "export GUROBI_HOME=/data/CDSL_Gurobi_users/gurobi900/linux64 "
-        "export GRB_LICENSE_FILE=/data/CDSL_Gurobi_users/gurobi900/gurobi.lic.11Aug2020 "
-        "module use --prepend /data/CDSL_Gurobi_users/modules "
-        "module load gurobi "
-        "module load gcc/7.4.0 "
-        "./run --query -i doubly_unique "
+        "set -e && "
+        "export GUROBI_HOME=/data/CDSL_Gurobi_users/gurobi910/linux64 && "
+        "export GRB_LICENSE_FILE=/data/CDSL_Gurobi_users/gurobi910/gurobi.lic && "
+        "module use --prepend /data/CDSL_Gurobi_users/modules && "
+        "module load gurobi/9.1.0 && "
+        "module load gcc/7.4.0  && "
+        "/data/CDSL_Gurobi_users/CAMMiQ/src_scrna/run_gurobi910 --query -i doubly_unique "
         "-h 26 26 -f {params[0]} {params[1]} {params[2]} "
         "-o {output} -d {params[3]} -a 10 5 -minL 51"
