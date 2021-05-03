@@ -20,7 +20,7 @@ rule convert_BAMs_to_fastq_dir:
         fq2=PathSeq_FQ2,
     shell:
         "module load bedtools && "
-        "bamToFastq {bam_file} -fq {fq1} -fq2 {fq2}"
+        "bamToFastq {input.bam_file} -fq {output.fq1} -fq2 {output.fq2}"
 
 rule run_CAMMiQ_species_long_reads:
     input:
