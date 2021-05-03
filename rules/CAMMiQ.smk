@@ -13,6 +13,8 @@ PathSeq_FQ1 = join(CAMMIQ_FASTQ_DIR, "{patient}-{sample}-{plate}-{cell}_1.fq")
 PathSeq_FQ2 = join(CAMMIQ_FASTQ_DIR, "{patient}-{sample}-{plate}-{cell}_2.fq")
 
 rule convert_BAMs_to_fastq_dir:
+    group:
+        "convert_BAMs_to_fastq_dir"
     input:
         bam_file=PathSeq_Cell_BAM
     output:
@@ -20,7 +22,7 @@ rule convert_BAMs_to_fastq_dir:
         fq2=PathSeq_FQ2,
     shell:
         "module load bedtools && "
-        "bamToFastq {input.bam_file} -fq {output.fq1} -fq2 {output.fq2}"
+        "bamToFastq -i {input.bam_file} -fq {output.fq1} -fq2 {output.fq2}"
 
 rule run_CAMMiQ_species_long_reads:
     input:
