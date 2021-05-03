@@ -3,7 +3,7 @@
 CAMMIQ_INDICES_DIR = "/data/CDSL_Gurobi_users/CAMMiQ/new_indices"
 GENOME_MAP = join(CAMMIQ_INDICES_DIR, "genome_map_{tax_level}.out")
 CAMMIQ_INDEX_BIN1 = join(CAMMIQ_INDICES_DIR, "index_{tax_level}_u_75.bin1")
-CAMMIQ_INDEX_BIN2 = join(CAMMIQ_INDICES_DIR, "index_{tax_level}_u_75.bin2")
+CAMMIQ_INDEX_BIN2 = join(CAMMIQ_INDICES_DIR, "index_{tax_level}_d_75.bin2")
 
 CAMMIQ_COUNT_FILE = join("output", "CAMMiQ", "read_cnts_{tax_level}.txt")
 
