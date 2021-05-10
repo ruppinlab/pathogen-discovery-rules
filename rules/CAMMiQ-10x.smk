@@ -25,7 +25,7 @@ rule convert_BAMs_to_fastq_dir:
 
 rule run_CAMMiQ_species_long_reads:
     input:
-        fq1=expand(PathSeq_FQ1, zip, patient=cells["patient"], sample=cells["sample"], plate=cells["plate"], cell=cells["cell"]),
+        fq1=expand(PathSeq_FQ1, zip, patient=cells["patient"], sample=cells["sample"], cell=cells["barcode"]),
     params:
         GENOME_MAP,
         CAMMIQ_INDEX_BIN1,
