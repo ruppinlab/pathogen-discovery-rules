@@ -30,13 +30,14 @@ localrules: filter_aligned_reads, FastqToBam, filter_vector_contaminant_reads, g
 ### rules for cleaning CellRanger output to prepare for running PathSeq ###
 
 rule filter_aligned_reads:
+    conda:
+        "../envs/samtools-env.yaml"
     input:
         CR_BAM_FILE
     output:
         CR_UNMAPPED_BAM_FILE,
         CR_UNMAPPED_BAI_FILE
     shell:
-        "module load samtools/1.11 && "
         "samtools view -h -b -f 4 {input} > {output[0]} && "
         "samtools index {output[0]}"
 
@@ -52,21 +53,23 @@ rule trim_reads:
         "../src/trim_TSO_polyA_sequences.py"
 
 rule sort_by_query_name:
+    conda:
+        "../envs/samtools-env.yaml"
     input:
         CR_UNMAPPED_TRIMMED_BAM
     output:
         CR_UNMAPPED_TRIMMED_QNAME_SORTED_BAM
     shell:
-        "module load samtools/1.11 && "
         "samtools sort -n -o {output} {input}"
 
 rule convert_to_fastq:
+    conda:
+        "../envs/bedtools-env.yaml"
     input:
         CR_UNMAPPED_TRIMMED_QNAME_SORTED_BAM
     output:
         UNMAPPED_FQ1
     shell:
-        "module load bedtools/2.29.2 && "
         "bamToFastq -i {input} -fq {output[0]}"
 
 rule run_fastp:
@@ -93,13 +96,14 @@ rule run_fastp:
 
 # convert filtered and trimmed FASTQ to BAM for PathSeq
 rule FastqToBam:
+    conda:
+        "../../envs/picard-env.yaml"
     input:
         TRIMMED_FQ1
     output:
         UNALIGNED_BAM
     shell:
-        "module load picard/2.25.0 && "
-        "java -jar $PICARDJARPATH/picard.jar FastqToSam "
+        "picard FastqToSam "
         "F1={input} O={output} "
         "SM={wildcards.patient}.{wildcards.sample} "
         "RG={wildcards.patient}.{wildcards.sample} "
@@ -128,28 +132,22 @@ rule PathSeqPipelineSpark:
     benchmark:
         "benchmarks/{patient}-{sample}.PathSeqPipelineSpark_host_filter_single.txt"
     run:
-        shell("mkdir /lscratch/$SLURM_JOBID/tmp")
-        shell("cp {input.host_bwa_image} /lscratch/$SLURM_JOBID/")
-        shell("cp {input.microbe_bwa_image} /lscratch/$SLURM_JOBID/")
-        shell("cp {input.microbe_dict_file} /lscratch/$SLURM_JOBID/")
-        shell("cp {input.host_hss_file} /lscratch/$SLURM_JOBID/")
-        shell("cp {input.taxonomy_db} /lscratch/$SLURM_JOBID/")
         shell(
-            "module load GATK/4.1.8.1 && "
+            "ml GATK/4.1.8.1-GCCcore-9.3.0-Java-1.8 && "
             "gatk PathSeqPipelineSpark "
             "--filter-duplicates false "
             "--min-score-identity .7 "
             "--input '{input.bam_file}' "
-            "--filter-bwa-image /lscratch/$SLURM_JOBID/{params.host_bwa_image} "
-            "--kmer-file /lscratch/$SLURM_JOBID/{params.host_hss_file} "
-            "--microbe-bwa-image /lscratch/$SLURM_JOBID/{params.microbe_bwa_image} "
-            "--microbe-dict /lscratch/$SLURM_JOBID/{params.microbe_dict_file} "
-            "--taxonomy-file /lscratch/$SLURM_JOBID/{params.taxonomy_db} "
+            "--filter-bwa-image {input.host_bwa_image} "
+            "--kmer-file {input.host_hss_file} "
+            "--microbe-bwa-image {input.microbe_bwa_image} "
+            "--microbe-dict {input.microbe_dict_file} "
+            "--taxonomy-file {input.taxonomy_db} "
             "--output '{output.pathseq_bam}' "
             "--scores-output '{output.pathseq_output}' "
             "--filter-metrics '{output.filter_metrics}' "
             "--score-metrics '{output.score_metrics}' "
-            '--java-options "-Xmx96g -Xms96G -Djava.io.tmpdir=/lscratch/$SLURM_JOBID/tmp -XX:+UseG1GC -XX:ParallelGCThreads=8 -XX:ConcGCThreads=2" '
+            '--java-options "-Xmx96g -Xms96G -XX:+UseG1GC -XX:ParallelGCThreads=8 -XX:ConcGCThreads=2" '
             '--spark-master local[8] '
             + config["params"]["PathSeq"]
         )
@@ -157,22 +155,24 @@ rule PathSeqPipelineSpark:
 # -v means to only report those entries in A that have no overlap in B
 # "/data/Robinson-SB/run-VecScreen/output/microbev1-vecscreen-combined-matches.bed"
 rule identify_reads_with_vector_contamination:
+    conda:
+        "../envs/bedtools-env.yaml"
     input:
         join("output", "PathSeq", "{patient}-{sample}", "pathseq.bam"),
         config["VecScreen"]["contaminant_hits"]
     output:
         temp(join("output", "PathSeq", "{patient}-{sample}", "pathseq.contaminants.bam")),
     shell:
-        "module load bedtools/2.29.2 && "
         "bedtools intersect -abam {input[0]} -b {input[1]} > {output[0]}"
 
 rule get_query_names_for_vector_contaminants:
+    conda:
+        "../envs/samtools-env.yaml"
     input:
         join("output", "PathSeq", "{patient}-{sample}", "pathseq.contaminants.bam")
     output:
         join("output", "PathSeq", "{patient}-{sample}", "contaminants.qname.txt")
     shell:
-        "module load samtools/1.11 && "
         "samtools view {input} | cut -f 1 > {output}"
 
 # Picard throws an error when contaminants.qname.txt is empty so we need to check this
@@ -189,8 +189,8 @@ rule filter_vector_contaminant_reads:
             shell("cp {input[0]} {output[0]}")
         else:
             shell(
-                "module load picard/2.25.0 && "
-                "java -jar $PICARDJARPATH/picard.jar FilterSamReads "
+                "ml picard/2.23.8-Java-11 && "
+                "java -jar $EBROOTPICARD/picard.jar FilterSamReads "
                 "I={input[0]} O={output} READ_LIST_FILE={input[1]} "
                 "FILTER=excludeReadList"
             )
@@ -231,13 +231,13 @@ rule PathSeqScoreSpark:
     output:
         pathseq_output = PATHSEQ_CELL_SCORE
     run:
-        n_alignments = int(next(shell("module load samtools/1.11 && samtools view {input[bam_file]} | wc -l", iterable=True)))
+        n_alignments = int(next(shell("ml SAMtools/1.11-GCC-10.2.0 && samtools view {input[bam_file]} | wc -l", iterable=True)))
         if n_alignments == 0:
             cols = ["tax_id", "taxonomy", "type", "name", "kingdom", "score", "score_normalized", "reads", "unambiguous", "reference_length"]
             pd.DataFrame(columns=cols).to_csv(output.pathseq_output, sep="\t", index=False)
         else:
             shell(
-                "module load GATK/4.1.8.1 && "
+                "ml GATK/4.1.8.1-GCCcore-9.3.0-Java-1.8 && "
                 "gatk PathSeqScoreSpark "
                 "--min-score-identity .7 "
                 "--unpaired-input '{input.bam_file}' "
